@@ -1,8 +1,15 @@
 
-from .utils import AWANLLM_API_KEY, MODEL
 from awan_llm_api import AwanLLMClient, Role
 from awan_llm_api.completions import ChatCompletions
+import sys
+import time
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from dotenv import load_dotenv
+load_dotenv()
 
+AWANLLM_API_KEY = os.getenv('AWAN_API_KEY')
+MODEL = os.getenv('MODEL_NAME_LARGE')
 
 class AwanAPI():
     def __init__(self, api_key=AWANLLM_API_KEY, model_name=MODEL):
