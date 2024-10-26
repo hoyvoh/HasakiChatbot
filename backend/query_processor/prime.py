@@ -5,14 +5,13 @@ import sys
 import time
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from dotenv import load_dotenv
+load_dotenv()
 from .minilm import get_decision
 from prompt import PROMPT_TEMPLATE, AwanAPI
 import regex as re
 import string
 from pyvi import ViTokenizer
-from dotenv import load_dotenv
-load_dotenv()
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 awan = AwanAPI(model_name=LARGE_MODEL)
