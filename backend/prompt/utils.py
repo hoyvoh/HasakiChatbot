@@ -1,3 +1,1 @@
 
-AWANLLM_API_KEY = "00cee614-263a-4491-8404-4624a62ed610"
-MODEL = "Meta-Llama-3.1-8B-Instruct"
