@@ -1,3 +1,11 @@
+from .prime import generate_answer
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+__all__ = ['generate_answer']
+
 '''
 2. Task Determination Using MiniLM
 Functionality: MiniLM analyzes the query and determines the specific task required (product details, pricing, promotion, recommendations, comparison, reviews, assurance/return policy, web page routing, stock availability).
