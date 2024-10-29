@@ -11,6 +11,9 @@ This module is designed to:
     Web Page Routing Terms (VectorDB) — 1 per product-related page.
     
 '''
+import sys
+sys.path.append("..")
 from .main import update_dataset
+
 
 __all__ = ['update_dataset']
