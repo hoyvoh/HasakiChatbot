@@ -2,6 +2,7 @@ import requests
 import pandas as pd
 from bs4 import BeautifulSoup
 from tqdm import tqdm
+import tqdm
 import regex as re
 from json.decoder import JSONDecodeError
 from dotenv import load_dotenv
@@ -18,7 +19,7 @@ def get_categories():
     
     categories = []
     for cat in tqdm.tqdm(list(categories_list)):
-        bs = BeautifulSoup(str(cat))
+        bs = BeautifulSoup(str(cat), features='html.parser')
         link = bs.find('a', href=True)['href']
         img = bs.find('img')['data-src']
         cat = bs.find('a', {'class':'text_dmuc'}).get_text()
@@ -29,7 +30,7 @@ def get_categories():
         }
         categories.append(cate)
 
-    pd.DataFrame(categories).to_csv('categories.csv', encoding='utf8', index=False)
+    pd.DataFrame(categories).to_csv('data/categories.csv', encoding='utf8', index=False)
     return categories
 
 def get_product_pages(categories):
@@ -74,7 +75,7 @@ def get_product_pages(categories):
         except KeyError as e:
             print(e)
 
-    pd.DataFrame(product_links).to_csv('product_links.csv') 
+    pd.DataFrame(product_links).to_csv('data/product_links.csv') 
     for plink in tqdm.tqdm(product_links):
         url = plink['plink']
         response = requests.get(url)
@@ -83,7 +84,7 @@ def get_product_pages(categories):
             continue
 
         plink['page'] = response.text
-    pd.DataFrame(product_links).to_csv('product_pages.csv', encoding='utf8')  
+    pd.DataFrame(product_links).to_csv('data/product_pages.csv', encoding='utf8')  
     return pd.DataFrame(product_links)
 
 def get_comments (product_links):
@@ -131,7 +132,7 @@ def get_comments (product_links):
                 print(e)
 
     comments_df = pd.DataFrame(comments)
-    comments_df.to_csv('comments.csv', encoding='utf8')
+    comments_df.to_csv('data/comments.csv', encoding='utf8')
 
 def get_product_data(product_links):
     product_data = []
@@ -202,8 +203,8 @@ def get_product_data(product_links):
         product_data.append(line)
         brand_data.append(bline)
 
-    pd.DataFrame(product_data).to_csv('product_data.csv', encoding='utf8')
-    pd.DataFrame(brand_data).to_csv('brand_data.csv', encoding='utf8')
+    pd.DataFrame(product_data).to_csv('data/product_data.csv', encoding='utf8')
+    pd.DataFrame(brand_data).to_csv('data/brand_data.csv', encoding='utf8')
 
 def get_campaign():
     url = 'https://hasaki.vn/campaign/wow'
@@ -225,7 +226,7 @@ def get_campaign():
                 'link': link['href'],
                 'img': img['data-src']
             })
-    pd.DataFrame(campaigns).to_csv('campaigns.csv', encoding='utf8')
+    pd.DataFrame(campaigns).to_csv('data/campaigns.csv', encoding='utf8')
 
 def get_supports():
     url = 'https://hotro.hasaki.vn'
@@ -281,14 +282,31 @@ def get_supports():
                 'content':content
             })
 
-    pd.DataFrame(supports).to_csv('supports.csv', encoding='utf8')
+    pd.DataFrame(supports).to_csv('data/supports.csv', encoding='utf8')
 
 def update_dataset():
+    print('Fetching categories...')
+    print('======================')
     categories = get_categories()
+    print('======================')
+    print('Fetching products...')
+    print('======================')
     product_links = get_product_pages(categories)
+    print('======================')
+    print('Fetching campaign data...')
+    print('======================')
     get_campaign()
+    print('======================')
+    print('Fetching support policy...')
+    print('======================')
     get_supports()
+    print('======================')
+    print('Fetching product data...')
+    print('======================')
     get_product_data(product_links)
+    print('======================')
+    print('Fetching comments...')
+    print('======================')
     get_comments(product_links)
     print('Update Completed')    
 

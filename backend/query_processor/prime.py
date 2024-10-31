@@ -1,18 +1,13 @@
-'''
-This module handles basic flow from user
-'''
 import sys
-import time
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
+from dotenv import load_dotenv
+load_dotenv()
 from .minilm import get_decision
 from prompt import PROMPT_TEMPLATE, AwanAPI
 import regex as re
 import string
 from pyvi import ViTokenizer
-from dotenv import load_dotenv
-load_dotenv()
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 awan = AwanAPI(model_name=LARGE_MODEL)
@@ -20,15 +15,16 @@ print('using', LARGE_MODEL)
 
 def switch(signal, message):
     metadata = {}
-    print(signal)
+    print('signal:', signal)
     if signal == 1:
         # flow 1
         # handle message in structure
-        product = re.sub(rf'[{string.punctuation}\n\t]','',message.strip().lower())
+        product = str(message['product_term'])
         product = ViTokenizer.tokenize(product)
         print(product)
 
         # embed product term PhoBERT
+
 
         # query embedding in Product Index (Title +  ID) => top 1 product id
 
@@ -53,12 +49,11 @@ def switch(signal, message):
 
 def get_document(query):
     # Call MiniLM for classification
-    decided_string = get_decision(query)
-    print(decided_string)
+    decided_json = get_decision(query)
     
     # analyze str => flow to go
-    signal = decided_string.split(',')[0]
-    message = decided_string.split(',')[:-1]
+    signal = int(decided_json['signal'])
+    message = decided_json
     
     document = switch(signal, message)
     print(document)
@@ -76,4 +71,5 @@ def generate_answer(query, awan):
     return answer
 
 if __name__ == '__main__':
-    print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
+    #print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
+    print(generate_answer('Hôm trước mua dầu gội bên Hasaki mà chất lượng kém quá, muốn trả hàng mà làm nọ làm kia. Làm sao để gửi báo cáo?', awan))

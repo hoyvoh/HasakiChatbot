@@ -1,5 +1,6 @@
-data/*
-**/__pycache__/*
+**/data/*
+**/__pycache__/
 **/.env
 **/env/
 backend/.env
+*/env
