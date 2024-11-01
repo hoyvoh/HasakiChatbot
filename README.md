@@ -30,7 +30,11 @@ uvicorn main:app --reload
 
 # One-Liner
 
-Add later
+On the global directory of the project, where you can see docker-compose.yaml, you can use this command:
+
+```
+docker-compose up --build
+```
 
 # About .env
 
