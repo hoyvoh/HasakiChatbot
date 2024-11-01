@@ -8,17 +8,16 @@ class MongoDB():
         
         self.username = username
         self.connection_str = f"mongodb+srv://{username}:{password}@{cluster_url}/test?retryWrites=true&w=majority".format(username, password, cluster_url)
-        
+        self.dbname='hasaki_data'
         self.client = MongoClient(self.connection_str)
        
     
-    def collection(self, dbname, collection_name):
-        self.db = self.client[dbname]
+    def collection(self, collection_name):
+        self.db = self.client[self.dbname]
         return self.db[collection_name]
     
     def upsert_data(self, data, collection, unique_field):
         
-        # Prepare a list of update operations
         operations = []
 
         # Loop over each row in the DataFrame
@@ -34,3 +33,20 @@ class MongoDB():
         if operations:
             result = collection.bulk_write(operations)
             print("Upsert complete. Matched:", result.matched_count, "Inserted:", result.upserted_count)
+
+    def query_pid(self, pid, collection_name='product_data'):
+        col = self.collection(collection_name=collection_name)
+        
+        try:
+            # Query the document using the pid
+            result = col.find_one({"pid": pid})
+
+            if result is not None:
+                print("Document found:", result)
+                return result  # Return the found document
+            else:
+                print("No document found with the given PID.")
+                return None  # Return None if no document was found
+        except Exception as e:
+            print(f"Error querying PID: {e}")
+            return None

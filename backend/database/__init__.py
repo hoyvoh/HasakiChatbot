@@ -13,6 +13,6 @@ This module is designed to:
 
 '''
 from .mongodb.mongodb_connection import MongoDB
-from .pinecone.pipecone_connection import PineConeDB
+from .pinecone.pinecone_connection import PineConeDB, create_vector_emb
 
-__all__ = ['MongoDB', 'PineConeDB']
+__all__ = ['MongoDB', 'PineConeDB', 'create_vector_emb']
