@@ -2,23 +2,16 @@ import pandas as pd
 from transformers import AutoTokenizer, AutoModel
 import torch
 from pinecone import Pinecone, ServerlessSpec
-import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from dotenv import load_dotenv
-load_dotenv()
-
-PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-TOKENIZER_MODEL=os.getenv('TOKENIZER_MODEL')
+TOKENIZER_MODEL = os.getenv('TOKENIZER_MODEL')
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
 model = AutoModel.from_pretrained(TOKENIZER_MODEL)
 
 class PineConeDB():
-    def __init__(self, api_key=PINECONE_API_KEY):
+    def __init__(self, api_key):
         
         self.pc = Pinecone(api_key=api_key)
    
-    
     def create_index(self, index_name, dimension):
         if index_name not in self.pc.list_indexes():
             self.pc.create_index(
@@ -32,9 +25,6 @@ class PineConeDB():
                 deletion_protection="disabled"
                 )
         return self.pc.Index(index_name)
-    
-    def query_index(self, query,namespace, dimension):
-        pass
 
         
 def create_vector_emb(text):
