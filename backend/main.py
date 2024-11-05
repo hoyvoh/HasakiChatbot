@@ -3,9 +3,11 @@ from fastapi import FastAPI
 from prompt import AwanAPI
 from pydantic import BaseModel
 from database import MongoDB, PineConeDB
+import os
 from fastapi.middleware.cors import CORSMiddleware
 from os import getenv
 from dotenv import load_dotenv
+os.environ.clear()
 load_dotenv()
 
 MODEL_NAME = getenv('MODEL_NAME_LARGE')

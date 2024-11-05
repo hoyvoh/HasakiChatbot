@@ -2,6 +2,7 @@
 from pymongo import MongoClient, UpdateOne
 import pandas as pd
 from tqdm import tqdm
+from itertools import combinations
 
 class MongoDB():
     def __init__(self, username, password, cluster_url):
@@ -39,10 +40,11 @@ class MongoDB():
         
         try:
             # Query the document using the pid
-            result = col.find_one({"pid": pid})
+            product_ids = list(map(int, product_ids))
+            result = col.find_one({"pid": int(pid)})
 
             if result is not None:
-                print("Document found:", result)
+                # print("Document found:", result)
                 return result  # Return the found document
             else:
                 print("No document found with the given PID.")
@@ -50,3 +52,27 @@ class MongoDB():
         except Exception as e:
             print(f"Error querying PID: {e}")
             return None
+    
+    def query_relevant_products_within_budget(self, product_ids, budget, collection_name='product_data'):
+        col = self.collection(collection_name=collection_name)
+        
+        try:
+            # Convert product_ids to integers to match the MongoDB `pid` field
+            product_ids = list(map(int, product_ids))
+            fields_to_return = {'pname':1, 'plink':1, 'price':1}
+            
+            # Step 1: Fetch relevant products by product_ids
+            results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
+            products = list(results)
+
+            if not products:
+                print("No relevant products found for given IDs.")
+                return {"products": [], "combos": []}
+            result = {
+                "products": products
+            }
+            return result
+
+        except Exception as e:
+            print(f"Error querying products within budget: {e}")
+            return {"products": []}
