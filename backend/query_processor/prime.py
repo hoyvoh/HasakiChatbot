@@ -17,6 +17,24 @@ LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 awan = AwanAPI(model_name=LARGE_MODEL)
 print('using', LARGE_MODEL)
 
+def extract_products_to_natural_language(data):
+    if not isinstance(data, dict) or 'products' not in data or not isinstance(data['products'], list):
+        return "No valid product structure found."
+    products = data['products']
+    natural_language_output = []
+    for product in products:
+        pname = product.get('pname', 'Unknown Product')
+        price = product.get('price', 0)
+        plink = product.get('plink', '')
+        price_formatted = f"{price:,} VND"
+        product_description = (
+            f"Product Name: {pname}, "
+            f"Price: {price_formatted}, "
+            f"Link: {plink}"
+        )
+        natural_language_output.append(product_description)
+    return "\n".join(natural_language_output)
+
 def switch(signal, message, pc, mongo):
     metadata = {}
     print('signal:', signal)
@@ -27,9 +45,9 @@ def switch(signal, message, pc, mongo):
         product = ViTokenizer.tokenize(product)
 
         # query embedding in Product Index (Title +  ID) => top 1 product id
-        pid = pc.query_index_name_to_id(query=product)
+        pids = pc.query_index_name_to_id(query=product)
         # query ID in product collection => metadata
-        metadata = mongo.query_pid(pid)
+        metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
 
     elif signal == 2:
         pass
@@ -59,6 +77,9 @@ def switch(signal, message, pc, mongo):
         metadata = {
             'product':message['product_term']
         }
+    
+
+    metadata = extract_products_to_natural_language(metadata)
     return metadata
 
 
@@ -71,7 +92,9 @@ def get_document(query, pc, mongo):
 
 def generate_answer(query, awan, pc, mongo):
     document = get_document(query, pc, mongo)
+
     guide = PROMPT_TEMPLATE.format(document)
+    print(guide)
     chat_response = awan.get_response(guide,query)
     answer = chat_response.get('choices')[0]['message']['content']
 
