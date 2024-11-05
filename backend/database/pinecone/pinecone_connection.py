@@ -6,10 +6,11 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from dotenv import load_dotenv
+
 load_dotenv()
 
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
-TOKENIZER_MODEL=os.getenv('TOKENIZER_MODEL')
+TOKENIZER_MODEL= os.getenv('TOKENIZER_MODEL')
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
 model = AutoModel.from_pretrained(TOKENIZER_MODEL)
 
@@ -31,18 +32,18 @@ class PineConeDB():
                 )
         return self.pc.Index(index_name)
     
-    def query_index_name_to_id(self, indexname, query):
+    def query_index_name_to_id(self, query,indexname='hasaki-index', namespace='product-pname-namespace', topk=1):
         index = self.pc.Index(indexname)
         embeddings = create_vector_emb(query)
         query_response = index.query(
             vector=embeddings,
-            top_k=1,            
-            namespace="",        
+            top_k=topk,            
+            namespace=namespace,        
             include_values=True  
         )
-
-        return query_response['matches'][0]['id']
-
+        product_ids = [match['id'] for match in query_response['matches']]
+        print("Retrieved product IDs:", product_ids)
+        return product_ids
 
 def create_vector_emb(text):
     inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=128)
@@ -56,5 +57,5 @@ if __name__ == '__main__':
     index_name = 'product-pname-index'
     pc = PineConeDB(api_key=PINECONE_API_KEY)
 
-    print(pc.query_index_name_to_id(indexname=index_name, query=query))
+    print(pc.query_index_name_to_id(indexname=index_name, query=query, topk=10))
  
