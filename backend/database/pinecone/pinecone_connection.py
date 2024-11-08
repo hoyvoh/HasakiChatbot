@@ -2,7 +2,13 @@ import pandas as pd
 from transformers import AutoTokenizer, AutoModel
 from pinecone import Pinecone, ServerlessSpec
 import os
+import sys
+import unicodedata
+import regex as re
+from pyvi import ViTokenizer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -50,7 +56,11 @@ def create_vector_emb(text):
     outputs = model(**inputs)
     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
     return embedding
-  
+
+stop_words = []
+with open (os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')),'stopwords.txt'), 'r', encoding='utf8') as f:
+    stop_words.extend(f.read().split('\n'))
+
 # Text cleaning function
 def clean_text(text):
     # Convert to lowercase
@@ -68,7 +78,7 @@ def clean_text(text):
     # tokenized_sentence = word_tokenize(text, format='text').split()  # List of words
     tokenized_sentence = ViTokenizer.tokenize(text)
    
-    cleaned_sentence = ' '.join(word for word in tokenized_sentence.split() if word not in stop_words[0].tolist())
+    cleaned_sentence = ' '.join(word for word in tokenized_sentence.split() if word not in stop_words)
     text = ' '.join(word for word in text.split() if word not in stop_words)  # Remove stopwords
     return cleaned_sentence 
 
@@ -76,6 +86,7 @@ if __name__ == '__main__':
     query = 'Sữa_rửa_mặt sáng_da mờ_sẹo'
     index_name = 'product-pname-index'
     pc = PineConeDB(api_key=PINECONE_API_KEY)
+    
 
     print(pc.query_index_name_to_id(indexname=index_name, query=query, topk=10))
  
