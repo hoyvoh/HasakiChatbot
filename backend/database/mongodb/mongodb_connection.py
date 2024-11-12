@@ -52,6 +52,30 @@ class MongoDB():
         except Exception as e:
             print(f"Error querying PID: {e}")
             return None
+        
+    def query_pids(self, product_ids):
+        col = self.collection(collection_name='product_data')
+        
+        try:
+            # Convert product_ids to integers to match the MongoDB `pid` field
+            product_ids = list(map(int, product_ids))
+            # fields_to_return = {'pname':1, 'plink':1, 'price':1}
+            
+            # Step 1: Fetch relevant products by product_ids
+            results = col.find({"pid": {"$in": product_ids}})
+            products = list(results)
+
+            if not products:
+                print("No relevant products found for given IDs.")
+                return {"products": []}
+            result = {
+                "products": products
+            }
+            return result
+
+        except Exception as e:
+            print(f"Error querying products: {e}")
+            return {"products": []}
     
     def query_relevant_products_within_budget(self, product_ids, budget, collection_name='product_data'):
         col = self.collection(collection_name=collection_name)
