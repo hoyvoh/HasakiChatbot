@@ -77,8 +77,6 @@ def switch(signal, message, pc, mongo):
         metadata = {
             'product':message['product_term']
         }
-    
-
     metadata = extract_products_to_natural_language(metadata)
     return metadata
 
