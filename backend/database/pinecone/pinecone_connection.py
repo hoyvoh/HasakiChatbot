@@ -49,6 +49,21 @@ class PineConeDB():
         product_ids = [match['id'] for match in query_response['matches']]
         print("Retrieved product IDs:", product_ids)
         return product_ids
+    
+    def query_support_metadata(self, query):
+        index = self.pc.Index('hasaki-index')
+        query_embedded = create_vector_emb(query)
+        query_response = index.query(
+            vector=query_embedded,
+            top_k=2,
+            namespace='support-namespace',
+            include_metadata=True
+        )
+        metadata = []
+        for match in query_response['matches']:
+            metadata.append({'content': match['metadata']['content'], 'title': match['metadata']['title'], 'link': match['metadata']['link']})
+        
+        return metadata
 
 def create_vector_emb(text):
     cleaned_text = clean_text(text)

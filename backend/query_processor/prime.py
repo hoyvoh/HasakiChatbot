@@ -35,6 +35,17 @@ def extract_products_to_natural_language(data):
         natural_language_output.append(product_description)
     return "\n".join(natural_language_output)
 
+def extract_support_to_natural_language(data):
+    natural_language_output = []
+    for info in data:
+        support_des = (
+            f"Information to find answer to help: {info['content']}, "
+            f"Give user link the most suitable: {info['link']}, "
+        )
+
+        natural_language_output.append(support_des)
+    return "\n".join(natural_language_output)
+
 def switch(signal, message, pc, mongo):
     metadata = {}
     print('signal:', signal)
@@ -50,9 +61,22 @@ def switch(signal, message, pc, mongo):
         metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
 
     elif signal == 2:
-        pass
+        product1 = ViTokenizer.tokenize(str(message['product_term_1']))
+        product2 = ViTokenizer.tokenize(str(message['product_term_2']))
+
+        pids = pc.query_index_name_to_id(query=product1)
+        pid2 = pc.query_index_name_to_id(query=product2)
+        for i in range(len(pid2)):
+            pids.append(pid2[i])
+        print(pids)
+        metadata = mongo.query_pids(pids)
+        
     elif signal == 4:
-        pass
+        query = ViTokenizer.tokenize(str(message['query']))
+        metadata = pc.query_support_metadata(query)
+        
+        return extract_support_to_natural_language(metadata)
+
     elif signal == 5:
         '''
         (5) Nếu người dùng cung cấp một số tiền và cần hỗ trợ mua hàng dựa trên số tiền hiện có, hãy trả lời với cú pháp: 
