@@ -9,6 +9,7 @@ load_dotenv()
 # from .minilm import get_decision
 from . import minilm
 from prompt import PROMPT_TEMPLATE, AwanAPI
+from itertools import combinations
 import regex as re
 import string
 from pyvi import ViTokenizer
@@ -46,6 +47,42 @@ def extract_support_to_natural_language(data):
         natural_language_output.append(support_des)
     return "\n".join(natural_language_output)
 
+# Determine tolerable solution
+def suggest_based_on_budget(data, tolerance=0.1, top_n=3):
+    budget = data["budget"]
+    products = data["products"]
+
+    # Calculate budget range
+    lower_bound = budget * (1 - tolerance)
+    upper_bound = budget * (1 + tolerance)
+
+    all_solutions = []
+    for r in range(1, len(products) + 1):
+        all_solutions.extend(combinations(products, r))
+    legit_solutions = [
+        combo for combo in all_solutions
+        if lower_bound <= sum(product["price"] for product in combo) <= upper_bound
+    ]
+    ranked_solutions = sorted(
+        legit_solutions,
+        key=lambda plan: (
+            abs(budget - sum(product["price"] for product in plan)),  
+            -sum(product["price"] for product in plan),              
+            -len(plan)                                             
+        )
+    )
+
+    top_solutions = [
+        {
+            "products": plan, 
+            "total_cost": sum(product["price"] for product in plan)
+        }
+        for plan in ranked_solutions[:top_n]
+    ]
+    
+    return top_solutions
+
+
 def switch(signal, message, pc, mongo):
     metadata = {}
     print('signal:', signal)
@@ -71,6 +108,7 @@ def switch(signal, message, pc, mongo):
         print(pids)
         metadata = mongo.query_pids(pids)
         
+
     elif signal == 4:
         query = ViTokenizer.tokenize(str(message['query']))
         metadata = pc.query_support_metadata(query)
@@ -85,7 +123,7 @@ def switch(signal, message, pc, mongo):
         product term ở đây là một danh sách các sản phẩm gồm sản phẩm đầu là sản phẩm chính và các sản phẩm sau là 
         sản phẩm mà người dùng có thể cũng mua chung
         '''
-        budget = message['budget']
+        budget = int(message['budget'])
         product_terms = ViTokenizer.tokenize(message['product_term']).split(',')
         namespace = 'product-desc-namespace'
         product_ids = []
@@ -96,6 +134,23 @@ def switch(signal, message, pc, mongo):
         
         product_ids = list(set(product_ids))
         metadata = mongo.query_relevant_products_within_budget(product_ids=product_ids, budget=budget)
+        metadata["budget"] = budget
+        solutions = suggest_based_on_budget(metadata, tolerance=0.2)
+        document = []
+        document.append("\nHãy gợi ý cho khách hàng các cách lựa chọn sau:\n")
+        for idx, plan in enumerate(solutions, 1):
+            document.append(f"Combo {idx}:\n")
+            for product in plan["products"]:
+                document.append(
+                    f"  - Sản phẩm: {product['pname']}\n"
+                    f"    :ink: {product['plink']}\n"
+                    f"    Giá: {product['price']}\n"
+                )
+            document.append(f"Tổng tiền: {plan['total_cost']}\n")
+            document.append("-" * 40 + "\n")
+        # debugging
+        print(document)
+        return document
 
     else: # signal == 3
         metadata = {
