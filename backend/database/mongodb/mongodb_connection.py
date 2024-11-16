@@ -100,3 +100,38 @@ class MongoDB():
         except Exception as e:
             print(f"Error querying products within budget: {e}")
             return {"products": []}
+
+    def query_pids_with_filter(self, pid_list, message, collection_name='product_data'):
+        col = self.collection(collection_name=collection_name)
+        fields_to_return = {'pname':1, 'plink':1, 'price':1}
+        result = []
+        try:
+            pid_list = list(map(int, pid_list))
+            if 'operator_price' in message and 'price' in message:
+                
+                # Query the document using the pid
+                results = col.find(
+                                { 
+                                    'pid': { '$in': pid_list },
+                                    'price': { message['operator_price']: int(message['price'])}  
+                                },
+                                fields_to_return)
+            else: 
+                # Query the document using the pid
+                results = col.find(
+                                { 
+                                    'pid': { '$in': pid_list }},
+                                fields_to_return)
+            products = list(results)
+            
+            if not products:
+                print("No relevant products found for given IDs.")
+                return {"products": []}
+            
+            result = {
+                "products": products
+            }
+            return result
+        except Exception as e:
+            print(f"Error querying PID: {e}")
+            return {"products": []}

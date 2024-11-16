@@ -153,12 +153,21 @@ def switch(signal, message, pc, mongo):
         return document
 
     else: # signal == 3
-        metadata = {
-            'product':message['product_term']
-        }
+        if "product_term" in message:
+            product = str(message['product_term'])
+            tokenized_product = ViTokenizer.tokenize(product)
+            
+            # query embedding in Product Index (Title +  ID) => top 1 product id
+            pid_list_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
+            
+            pid_list_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
+            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
+            
+            # query ID in product collection => metadata
+            metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
+
     metadata = extract_products_to_natural_language(metadata)
     return metadata
-
 
 def get_document(query, pc, mongo):
     decided_json = minilm.get_decision(query)
@@ -169,9 +178,9 @@ def get_document(query, pc, mongo):
 
 def generate_answer(query, awan, pc, mongo):
     document = get_document(query, pc, mongo)
-
+    print("doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
-    print(guide)
+    
     chat_response = awan.get_response(guide,query)
     answer = chat_response.get('choices')[0]['message']['content']
 
