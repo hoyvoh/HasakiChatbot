@@ -143,12 +143,13 @@ def switch(signal, message, pc, mongo):
             for product in plan["products"]:
                 document.append(
                     f"  - Sản phẩm: {product['pname']}\n"
-                    f"    :ink: {product['plink']}\n"
+                    f"    link: {product['plink']}\n"
                     f"    Giá: {product['price']}\n"
                 )
             document.append(f"Tổng tiền: {plan['total_cost']}\n")
             document.append("-" * 40 + "\n")
         # debugging
+        document = '\n'.join(document)
         print(document)
         return document
 
@@ -180,6 +181,7 @@ def generate_answer(query, awan, pc, mongo):
     document = get_document(query, pc, mongo)
     print("doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
+
     
     chat_response = awan.get_response(guide,query)
     answer = chat_response.get('choices')[0]['message']['content']
