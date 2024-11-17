@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from minilm import get_decision
+from .minilm import get_decision
 # from . import minilm
 from prompt import PROMPT_TEMPLATE, AwanAPI, OpenAIClient
 from database import PineConeDB, MongoDB
@@ -187,7 +187,8 @@ def get_document(query, pc, mongo):
 
 def generate_answer(query, client, pc, mongo):
     document = get_document(query, pc, mongo)
-    print("doc: ", document)
+    print("LLM:", client.model_name)
+    print("Doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
 
     
