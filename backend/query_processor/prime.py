@@ -6,17 +6,24 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# from .minilm import get_decision
-from . import minilm
-from prompt import PROMPT_TEMPLATE, AwanAPI
+from minilm import get_decision
+# from . import minilm
+from prompt import PROMPT_TEMPLATE, AwanAPI, OpenAIClient
+from database import PineConeDB, MongoDB
 from itertools import combinations
 import regex as re
 import string
 from pyvi import ViTokenizer
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+USER = os.getenv('USERNAME')
+PASS = os.getenv('PASSWORD')
+URL = os.getenv('CLUSTER_URL')
 awan = AwanAPI(model_name=LARGE_MODEL)
-print('using', LARGE_MODEL)
+openai = OpenAIClient()
+pc = PineConeDB(PINECONE_API_KEY)
+mongo = MongoDB(USER, PASS, URL)
 
 def extract_products_to_natural_language(data):
     if not isinstance(data, dict) or 'products' not in data or not isinstance(data['products'], list):
@@ -159,10 +166,10 @@ def switch(signal, message, pc, mongo):
             tokenized_product = ViTokenizer.tokenize(product)
             
             # query embedding in Product Index (Title +  ID) => top 1 product id
-            pid_list_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
+            pid_list_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=10)
             
-            pid_list_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
-            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
+            pid_list_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=10)
+            print("top 20 pid: ", pid_list_by_pname + pid_list_by_desc)
             
             # query ID in product collection => metadata
             metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
@@ -171,23 +178,24 @@ def switch(signal, message, pc, mongo):
     return metadata
 
 def get_document(query, pc, mongo):
-    decided_json = minilm.get_decision(query)
+    decided_json = get_decision(query)
+    print("decided json:", decided_json)
     signal = int(decided_json['signal'])
     message = decided_json
     document = switch(signal, message, pc, mongo)
     return document
 
-def generate_answer(query, awan, pc, mongo):
+def generate_answer(query, client, pc, mongo):
     document = get_document(query, pc, mongo)
     print("doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
 
     
-    chat_response = awan.get_response(guide,query)
-    answer = chat_response.get('choices')[0]['message']['content']
-
-    return answer
+    chat_response = client.get_response(prompt = guide, user_message = query)
+    return chat_response
 
 if __name__ == '__main__':
     #print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
-    print(generate_answer('Hôm trước mua dầu gội bên Hasaki mà chất lượng kém quá, muốn trả hàng mà làm nọ làm kia. Làm sao để gửi báo cáo?', awan))
+    # print(generate_answer('Son dưỡng 3CE khác gì son dưỡng vaseline', openai, pc, mongo))
+    # print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
+    print(generate_answer('Son bóng romand có khuyến mãi không', openai, pc, mongo))

@@ -13,8 +13,8 @@ def clean_text(text):
     # Normalize Unicode characters
     text = unicodedata.normalize('NFKC', text)
     
-    # Remove characters and numbers
-    text = re.sub(r'[^a-zA-ZÀ-ỹ ]+', '', text)
+    # # Remove characters and numbers
+    # text = re.sub(r'[^a-zA-ZÀ-ỹ ]+', '', text)
     
     # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text).strip()

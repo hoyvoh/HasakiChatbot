@@ -3,8 +3,9 @@ import os
 import json
 import time
 from dotenv import load_dotenv
-import prompt_design
-
+# import prompt_design
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 load_dotenv()
 
 API_KEY = os.getenv("OPENAI_API_KEY")
@@ -55,7 +56,8 @@ class OpenAIClient:
         try:
             completion = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=self.history
+                messages=self.history,
+                response_format={"type": "json_object"}
             )
             assistant_response = completion.choices[0].message.content
             try:
@@ -72,37 +74,37 @@ class OpenAIClient:
 
 
 
-if __name__=='__main__':
-    client = OpenAIClient()
-    system_prompt = prompt_design.PROMPT_TEMPLATE
+# if __name__=='__main__':
+#     client = OpenAIClient()
+#     system_prompt = prompt_design.PROMPT_TEMPLATE
 
-    user_messages = [
-        'Giới thiệu cho tôi các sản phẩm bán chạy nhất.',
-        'Ở đây có bán gì rẻ rẻ không?',
-        'Cây son mắc nhất trên hasaki là cây nào?'
-    ]
+#     user_messages = [
+#         'Giới thiệu cho tôi các sản phẩm bán chạy nhất.',
+#         'Ở đây có bán gì rẻ rẻ không?',
+#         'Cây son mắc nhất trên hasaki là cây nào?'
+#     ]
     
-    for message in user_messages:
-        response = client.get_response(user_message=message, prompt=system_prompt)
-        print(f"User: {message}\nAssistant: {response}")
+#     for message in user_messages:
+#         response = client.get_response(user_message=message, prompt=system_prompt)
+#         print(f"User: {message}\nAssistant: {response}")
     
-    # Test history optimization
-    print("\n=== Testing Optimized History ===")
-    print("Current History:")
-    for entry in client.history:
-        print(entry)
+#     # Test history optimization
+#     print("\n=== Testing Optimized History ===")
+#     print("Current History:")
+#     for entry in client.history:
+#         print(entry)
 
     
-    print("\nOptimized History:")
-    for entry in client.history:
-        print(entry)
+#     print("\nOptimized History:")
+#     for entry in client.history:
+#         print(entry)
 
-    # Test `get_json_from_prompt`
-    print("\n=== Testing `get_json_from_prompt` ===")
-    json_prompt = (
-        "You are an API assistant. Respond to the user's message in JSON format with the following keys: "
-        "'summary', 'details'."
-    )
-    json_response = client.get_json_from_prompt(user_message="Summarize Python functions.", prompt=json_prompt)
-    print("JSON Response:", json_response)
+#     # Test `get_json_from_prompt`
+#     print("\n=== Testing `get_json_from_prompt` ===")
+#     json_prompt = (
+#         "You are an API assistant. Respond to the user's message in JSON format with the following keys: "
+#         "'summary', 'details'."
+#     )
+#     json_response = client.get_json_from_prompt(user_message="Summarize Python functions.", prompt=json_prompt)
+#     print("JSON Response:", json_response)
     
