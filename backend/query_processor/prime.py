@@ -105,7 +105,7 @@ def switch(signal, message, pc, mongo):
         metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
 
     elif signal == 2:
-        product1 = ViTokenizer.tokenize(str(message['product_term_1']))
+        '''product1 = ViTokenizer.tokenize(str(message['product_term_1']))
         product2 = ViTokenizer.tokenize(str(message['product_term_2']))
 
         pids = pc.query_index_name_to_id(query=product1)
@@ -113,8 +113,19 @@ def switch(signal, message, pc, mongo):
         for i in range(len(pid2)):
             pids.append(pid2[i])
         print(pids)
-        metadata = mongo.query_pids(pids)
+        metadata = mongo.query_pids(pids)'''
+        docs = ""
+        for key, value in message.items():
+            if key.startswith('product_term_'):
+                product = ViTokenizer.tokenize(str(value))
+                pids = pc.query_index_name_to_id(query=product)
+                
+                metadata = mongo.query_pids(pids)
+
+                docs += f"Thông tin về {value}:\n {"\n\nvà ".join(metadata)}"
         
+        return docs
+
 
     elif signal == 4:
         query = ViTokenizer.tokenize(str(message['query']))

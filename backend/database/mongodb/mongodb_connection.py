@@ -57,21 +57,40 @@ class MongoDB():
         col = self.collection(collection_name='product_data')
         
         try:
-            # Convert product_ids to integers to match the MongoDB `pid` field
             product_ids = list(map(int, product_ids))
-            # fields_to_return = {'pname':1, 'plink':1, 'price':1}
+            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'desc':1, 'ingredients':1, 'rating':1, 'count_NEG':1,'count_NEU':1, 'count_POS':1}
             
-            # Step 1: Fetch relevant products by product_ids
-            results = col.find({"pid": {"$in": product_ids}})
+            results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
             products = list(results)
 
             if not products:
                 print("No relevant products found for given IDs.")
                 return {"products": []}
-            result = {
-                "products": products
-            }
-            return result
+            else:
+                metadata = []
+                for product_in4 in products:
+                    
+                    if product_in4['count_POS'] > max(product_in4['count_NEG'], product_in4['count_NEU']):
+                        feedback = "Tốt"
+                    elif product_in4['count_NEG'] > max(product_in4['count_POS'], product_in4['count_NEU']):
+                        feedback = "xấu"
+                    elif product_in4['count_NEU'] > max(product_in4['count_POS'], product_in4['count_NEG']):
+                        feedback = "bình thường"
+                    else:
+                        feedback = "không rõ"
+
+                    doc = f"""
+                    Tên sản phẩm: {product_in4['pname']}
+                    Giá: {product_in4['price']}
+                    Link: {product_in4['plink']}
+                    Mô tả: {product_in4['desc']}
+                    Thành phần: {product_in4['ingredients']}
+                    Điểm rating: {product_in4['rating']}
+                    Đánh giá của khách hàng phần lớn là: {feedback}"""
+                    
+                    metadata.append(doc)
+                return metadata
+            
 
         except Exception as e:
             print(f"Error querying products: {e}")

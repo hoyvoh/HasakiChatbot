@@ -20,7 +20,7 @@ def get_decision(query):
     thay thế cụm có dấu <>, không kèm dấu này, câu trả lời theo dạng json format.
     (0) Nếu người dùng chỉ hỏi một câu chào hỏi lịch sự bình thường, hãy trả lại với cú pháp: {'signal':0, 'query':'<câu hỏi>'}
     (1) Nếu người dùng nhắc đến việc tìm hiểu một sản phẩm rất cụ thể, hãy trả lời với cú pháp: {'signal':1,'product_term':'<tên sản phẩm>'}
-    (2) Nếu người dùng nhắc đến việc so sánh hai sản phẩm rất cụ thể, hãy trả lời với cú pháp: {'signal':2,'product_term_1'='<thông tin sản phẩm 1>','product_term_2'='<thông tin sản phẩm 2>'}
+    (2) Nếu người dùng nhắc đến việc so sánh giữa n sản phẩm hoặc để trả lời câu hỏi của người dùng phải so sánh giữa n sản phẩm, hãy trả lời với cú pháp: {'signal':2,'product_term_1'='<thông tin sản phẩm 1>','product_term_2'='<thông tin sản phẩm 2>',..., 'product_term_n'='thông tin sản phẩm n'}. Lưu ý: trong product_term phải cho tôi biết rõ ràng đó là gì ví dụ: Khi tôi nhập câu hỏi so sánh sửa rửa mặt cerave và svr thì product_term_1 là sửa rửa mặt cerave và product_term_2 là sửa rửa mặt svr.
     (3) Nếu người dùng nhắc đến việc tìm sản phẩm theo yêu cầu:
         hãy trả về các thuộc tính có trong cú pháp sau (nếu có), trong đó signal và product_term là bắt buộc: {'signal':3,'product_term':'<thông tin sản phẩm>', 'product_ingredients': '<thành phần sản phẩm>','price':'<price>', 'operator_price':'<operator>', 'rating':'<rating>', 'operator_rating':'<operator>', 'others':'<thông tin khác>'}
         Lưu ý <operator> sẽ là các operator trong mongodb như '$gte', '$lte' khi câu hỏi liên quan đến giá lớn hơn, bé hơn bao nhiêu đó. Hoặc rating cao hơn hay thấp hơn bao nhiêu đó.
@@ -38,5 +38,5 @@ def get_decision(query):
     return json_response
 
 if __name__ == '__main__':
-    print(get_decision('Bạn là ai?')) 
+    print(get_decision('Tôi nên mua sản phẩm nào: kem chống nắng lapoche, kem chống nắng hada, kem chống nắng sunplay, kem đánh răng')) 
     
