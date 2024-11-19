@@ -1,11 +1,16 @@
 
+import os
 from pymongo import MongoClient, UpdateOne
 import pandas as pd
 from tqdm import tqdm
 from itertools import combinations
 
+USER = os.getenv('USERNAME')
+PASS = os.getenv('PASSWORD')
+URL = os.getenv('CLUSTER_URL')
+
 class MongoDB():
-    def __init__(self, username, password, cluster_url):
+    def __init__(self, username=USER, password=PASS, cluster_url=URL):
         
         self.username = username
         self.connection_str = f"mongodb+srv://{username}:{password}@{cluster_url}/test?retryWrites=true&w=majority".format(username, password, cluster_url)
@@ -102,7 +107,7 @@ class MongoDB():
         try:
             # Convert product_ids to integers to match the MongoDB `pid` field
             product_ids = list(map(int, product_ids))
-            fields_to_return = {'pname':1, 'plink':1, 'price':1}
+            fields_to_return = {'pname':1, 'plink':1, 'price':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
             
             # Step 1: Fetch relevant products by product_ids
             results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
@@ -122,7 +127,7 @@ class MongoDB():
 
     def query_pids_with_filter(self, pid_list, message, collection_name='product_data'):
         col = self.collection(collection_name=collection_name)
-        fields_to_return = {'pname':1, 'plink':1, 'price':1}
+        fields_to_return = {'pname':1, 'plink':1, 'price':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
         result = []
         try:
             pid_list = list(map(int, pid_list))
