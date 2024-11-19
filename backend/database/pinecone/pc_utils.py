@@ -1,19 +1,24 @@
-import sys
 import time
-import regex as re
-import unicodedata
-from pyvi import ViTokenizer
-from sklearn.metrics import mean_absolute_error, root_mean_squared_error
-
-import os
+import pandas as pd
 from transformers import AutoTokenizer, AutoModel
-
-TOKENIZER_MODEL= os.getenv('TOKENIZER_MODEL')
-tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
-model = AutoModel.from_pretrained(TOKENIZER_MODEL)
-
+import os
+import sys
+import unicodedata
+import regex as re
+from sklearn.metrics import mean_absolute_error, root_mean_squared_error
+from pyvi import ViTokenizer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+
+from dotenv import load_dotenv
+
+load_dotenv()
+
+PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
+TOKENIZER_MODEL= os.getenv('TOKENIZER_MODEL')
+
+tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
+model = AutoModel.from_pretrained(TOKENIZER_MODEL)
 
 stop_words = []
 with open (os.path.join(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')),'stopwords.txt'), 'r', encoding='utf8') as f:
@@ -47,33 +52,33 @@ def create_vector_emb(text):
     embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
     return embedding
 
-# # Define the decorator
-# def time_it_ms(func):
-#     def wrapper(*args, **kwargs):
-#         start_time = time.time()  # Start timing
-#         result = func(*args, **kwargs)  # Execute the function
-#         end_time = time.time()  # End timing
-#         execution_time_ms = (end_time - start_time) * 1000  # Convert to milliseconds
-#         print(f"{func.__name__} executed in {execution_time_ms:.2f} ms")
-#         return result 
-#     return wrapper  
+# Define the decorator
+def time_it_ms(func):
+    def wrapper(*args, **kwargs):
+        start_time = time.time()  # Start timing
+        result = func(*args, **kwargs)  # Execute the function
+        end_time = time.time()  # End timing
+        execution_time_ms = (end_time - start_time) * 1000  # Convert to milliseconds
+        print(f"{func.__name__} executed in {execution_time_ms:.2f} ms")
+        return result 
+    return wrapper  
 
-# @time_it_ms
-# def get_pids_from_pc_response(query_response):
-#     pids = [match['id'] for match in query_response['matches']]
-#     return pids
+@time_it_ms
+def get_pids_from_pc_response(query_response):
+    pids = [match['id'] for match in query_response['matches']]
+    return pids
 
-# @time_it_ms
-# def get_similar_metrics(query, query_response):
-#     embeddings = create_vector_emb(query)
-#     pid_score_pair = []
-#     for match in query_response['matches']:
-#         pid_score_pair.append({'pid': match['id'], 
-#                             'cosine': match['score'],
-#                             'MAE': round(mean_absolute_error(embeddings, match['values']), 3), 
-#                             'RMSE': round(root_mean_squared_error(embeddings, match['values']), 3)})
+@time_it_ms
+def get_similar_metrics(query, query_response):
+    embeddings = create_vector_emb(query)
+    pid_score_pair = []
+    for match in query_response['matches']:
+        pid_score_pair.append({'pid': match['id'], 
+                            'cosine': match['score'],
+                            'MAE': round(mean_absolute_error(embeddings, match['values']), 3), 
+                            'RMSE': round(root_mean_squared_error(embeddings, match['values']), 3)})
     
-#     return pid_score_pair    
+    return pid_score_pair    
 
 if __name__ == '__main__':
     query = 'Sữa_rửa_mặt sáng_da mờ_sẹo'

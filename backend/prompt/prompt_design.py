@@ -12,13 +12,13 @@ Dữ liệu để trả lời câu hỏi: {}
 Nếu khách hàng hỏi những thứ không liên quan đến công việc của bạn, hãy tử tế gợi ý cho họ về việc mua hàng.
 Cấu trúc câu trả lời nên gồm có:
 - Trình bày câu trả lời của bạn tới khách hàng
-- Đưa danh sách các thông tin cụ thể cho từng sản phẩm, kèm theo link để giúp họ đến đặt hàng;
+- Đưa danh sách các thông tin cụ thể cho từng sản phẩm, kèm theo link có trong dữ liệu để giúp họ đến đặt hàng;
 - Luôn nhắc đến các chương trình khuyến mãi, giảm giá đầu tiên để khuyến khích khách hàng. Luôn luôn đính kèm đường link nếu có.
 - Luôn nói về chương trình đổi trả hoặc hỗ trợ phí ship nếu có thông tin.
 
 Nếu như khách hàng hỏi về hỗ trợ thì bạn sẽ chỉ làm làm các bước sau.
 - Bạn nãy đưa ra các bước làm để hỗ trợ khách hàng.
-- Luôn dẫn link cho khách hàng để khách hàng có thể đọc thêm.
+- Luôn dẫn link cho khách hàng để khách hàng có thể đọc thêm (không được đưa đường dẫn nếu tài liệu không đề cập).
 '''
 
 prompt = PromptTemplate(
