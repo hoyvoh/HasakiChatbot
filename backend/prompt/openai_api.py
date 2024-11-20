@@ -10,15 +10,31 @@ load_dotenv()
 
 API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = os.getenv("OPENAI_MODEL")
+EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING")
 
 class OpenAIClient:
-    def __init__(self, api_key=API_KEY, model_name=MODEL):
+    def __init__(self, api_key=API_KEY, model_name=MODEL, embedding_model=EMBEDDING_MODEL):
         self.api_key = api_key
         self.model_name = model_name
+        self.embedding_model= embedding_model
         self.history = []
         self.last_request_time = None
         if self.api_key and self.model_name:
             self.client = OpenAI(api_key=API_KEY)
+
+    def get_embeddings(self, input, mode='float'):  # mode: float | base64
+        try:
+            response = self.client.embeddings.create(
+                model=self.embedding_model,
+                input=input,
+                encoding_format=mode
+            )
+            embeddings = response["data"][0]["embedding"]
+            return embeddings
+        except Exception as e:
+            print(f"Error fetching embeddings: {e}")
+            return None
+
 
     def add_to_history(self, role, content):
         self.history.append({"role": role, "content": content})
@@ -28,7 +44,7 @@ class OpenAIClient:
             self.add_to_history("system", prompt)
 
         self.add_to_history("user", user_message)
-        if optimize_history and len(self.history) > 15:  
+        if optimize_history and len(self.history) > 100:  
             self.trim_history(max_messages=10)
 
         try:

@@ -107,7 +107,7 @@ class MongoDB():
         try:
             # Convert product_ids to integers to match the MongoDB `pid` field
             product_ids = list(map(int, product_ids))
-            fields_to_return = {'pname':1, 'plink':1, 'price':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
+            fields_to_return = {'pname':1, 'plink':1, 'price':1,'desc':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
             
             # Step 1: Fetch relevant products by product_ids
             results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
