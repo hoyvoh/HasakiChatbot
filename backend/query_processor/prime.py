@@ -129,8 +129,8 @@ def switch(signal, message, pc, mongo):
         for key, value in message.items():
             if key.startswith('product_term_'):
                 product = ViTokenizer.tokenize(str(value))
-                pids = pc.query_index_name_to_id(query=product)
-                
+                response = pc.query_index_name_to_id(query=product)
+                pids = get_pids_from_pc_response(response)
                 metadata = mongo.query_pids(pids)
 
                 docs += f"Thông tin về {value}:\n {"\n\nvà ".join(metadata)}"
