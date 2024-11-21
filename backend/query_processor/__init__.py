@@ -1,11 +1,12 @@
 from .prime import generate_answer
+from .query_assistant import query_assistant
 
 import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-__all__ = ['generate_answer', 'create_vector_emb' ]
+__all__ = ['generate_answer', 'create_vector_emb', 'query_assistant']
 
 '''
 2. Task Determination Using MiniLM

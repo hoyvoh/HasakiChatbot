@@ -5,13 +5,15 @@ import os
 import sys
 import unicodedata
 import regex as re
-from prompt import openai_api
+
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from pyvi import ViTokenizer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from dotenv import load_dotenv
+from prompt import openai_api
 
 load_dotenv()
 
