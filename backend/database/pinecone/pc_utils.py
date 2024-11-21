@@ -5,6 +5,7 @@ import os
 import sys
 import unicodedata
 import regex as re
+from prompt import openai_api
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from pyvi import ViTokenizer
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -16,6 +17,8 @@ load_dotenv()
 
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 TOKENIZER_MODEL= os.getenv('TOKENIZER_MODEL')
+
+openai_client = openai_api.OpenAIClient()
 
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
 model = AutoModel.from_pretrained(TOKENIZER_MODEL)
@@ -47,9 +50,10 @@ def clean_text(text):
 
 def create_vector_emb(text):
     cleaned_text = clean_text(text)
-    inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, max_length=128)
-    outputs = model(**inputs)
-    embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
+    # inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, max_length=128)
+    # outputs = model(**inputs)
+    # embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
+    embedding = openai_client.get_embeddings(cleaned_text)
     return embedding
 
 # Define the decorator
