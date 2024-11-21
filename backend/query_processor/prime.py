@@ -1,6 +1,5 @@
 import sys
 import os
-import time
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from dotenv import load_dotenv
@@ -13,6 +12,7 @@ from prompt import PROMPT_TEMPLATE, AwanAPI, OpenAIClient
 from database import PineConeDB, MongoDB, get_pids_from_pc_response, get_similar_metrics
 from itertools import combinations
 from pyvi import ViTokenizer
+from .query_assistant import query_assistant
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
@@ -209,6 +209,8 @@ def get_document(query, pc, mongo):
     signal = int(decided_json['signal'])
     message = decided_json
     document = switch(signal, message, pc, mongo)
+    additional = query_assistant(query=query, top_k=3)
+    document = str(document)+'\n'+ additional
     return document
 
 def generate_answer(query, client, pc, mongo):
