@@ -29,7 +29,8 @@ class OpenAIClient:
                 input=input,
                 encoding_format=mode
             )
-            embeddings = response["data"][0]["embedding"]
+            
+            embeddings = response.data[0].embedding
             return embeddings
         except Exception as e:
             print(f"Error fetching embeddings: {e}")

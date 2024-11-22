@@ -2,11 +2,11 @@ from pinecone import Pinecone, ServerlessSpec
 import os
 import sys
 from .pc_utils import create_vector_emb, time_it_ms
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 
@@ -29,7 +29,7 @@ class PineConeDB():
         return self.pc.Index(index_name)
     
     @time_it_ms
-    def query_index_name_to_id(self, query, indexname='hasaki-index', namespace='product-pname-namespace', topk=3):
+    def query_index_name_to_id(self, query, indexname='hasaki-index-v2', namespace='product-pname-namespace', topk=3):
         index = self.pc.Index(indexname)
         embeddings = create_vector_emb(query)
         query_response = index.query(

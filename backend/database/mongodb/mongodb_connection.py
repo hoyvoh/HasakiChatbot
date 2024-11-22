@@ -14,7 +14,7 @@ class MongoDB():
         
         self.username = username
         self.connection_str = f"mongodb+srv://{username}:{password}@{cluster_url}/test?retryWrites=true&w=majority".format(username, password, cluster_url)
-        self.dbname='hasaki_data'
+        self.dbname='hasaki_data_v2'
         self.client = MongoClient(self.connection_str)
        
     
@@ -22,23 +22,40 @@ class MongoDB():
         self.db = self.client[self.dbname]
         return self.db[collection_name]
     
-    def upsert_data(self, data, collection, unique_field):
+    def upsert_data(self, data_df, collection, unique_field, upsert_fields=None, mode="row"):
+        """
+        Generic function to upsert data into a MongoDB collection.
         
+        Args:
+            data_df (DataFrame): The DataFrame containing data to be upserted.
+            collection: The MongoDB collection object.
+            unique_field (str): The unique field to identify documents.
+            upsert_fields (list or str): Specific fields to upsert (optional). 
+                                        If None, upserts the entire row as a dictionary.
+            mode (str): "field" to upsert specific fields, "row" to upsert entire rows (default).
+        """
         operations = []
 
-        # Loop over each row in the DataFrame
-        for _, row in data.iterrows():
-            # Create a filter and update dictionary
-            filter_query = {unique_field: row[unique_field]}
-            update_query = {"$set": row.to_dict()}
+        for _, row in data_df.iterrows():
+            # Build the filter query
+            filter_query = {unique_field: row[unique_field] if isinstance(row[unique_field], int) else int(row[unique_field])}
 
-            # Append the UpdateOne operation for each row
+            # Build the update operation
+            if mode == "field" and upsert_fields:
+                # Upsert specific fields
+                update_query = {"$set": {field: row[field] for field in upsert_fields}}
+            else:
+                # Upsert the entire row as a dictionary
+                update_query = {"$set": row.to_dict()}
+
+            # Add the operation to the list
             operations.append(UpdateOne(filter_query, update_query, upsert=True))
 
-        # Bulk write to the collection
+        # Perform the bulk write
         if operations:
             result = collection.bulk_write(operations)
-            print("Upsert complete. Matched:", result.matched_count, "Inserted:", result.upserted_count)
+            print(f"Upserted {result.upserted_count} documents.")
+            print(f"Matched {result.matched_count} documents.")
 
     def query_pid(self, pid, collection_name='product_data'):
         col = self.collection(collection_name=collection_name)

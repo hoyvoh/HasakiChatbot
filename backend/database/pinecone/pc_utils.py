@@ -5,15 +5,15 @@ import os
 import sys
 import unicodedata
 import regex as re
-from prompt import openai_api
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 from pyvi import ViTokenizer
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
 from dotenv import load_dotenv
 
 load_dotenv()
+from prompt import openai_api
 
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 TOKENIZER_MODEL= os.getenv('TOKENIZER_MODEL')
@@ -49,12 +49,14 @@ def clean_text(text):
     return cleaned_sentence 
 
 def create_vector_emb(text):
-    cleaned_text = clean_text(text)
-    # inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, max_length=128)
-    # outputs = model(**inputs)
-    # embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
-    embedding = openai_client.get_embeddings(cleaned_text)
-    return embedding
+    if text != '':
+        cleaned_text = clean_text(text)
+        # inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, max_length=128)
+        # outputs = model(**inputs)
+        # embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
+        embedding = openai_client.get_embeddings(cleaned_text)
+        return embedding
+    
 
 # Define the decorator
 def time_it_ms(func):
@@ -69,7 +71,7 @@ def time_it_ms(func):
 
 @time_it_ms
 def get_pids_from_pc_response(query_response):
-    pids = [match['id'] for match in query_response['matches']]
+    pids = [int(match['id']) for match in query_response['matches']]
     return pids
 
 @time_it_ms
