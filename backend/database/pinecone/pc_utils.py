@@ -38,7 +38,7 @@ def clean_text(text):
     text = unicodedata.normalize('NFKC', text)
     
     # Remove characters and numbers
-    text = re.sub(r'[^a-zA-ZÀ-ỹ ]+', '', text)
+    text = re.sub(r'[^A-Za-z0-9\s]', '', text)
     
     # Remove extra whitespace
     text = re.sub(r'\s+', ' ', text).strip()
@@ -57,6 +57,14 @@ def create_vector_emb(text):
         # outputs = model(**inputs)
         # embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
         embedding = openai_client.get_embeddings(cleaned_text)
+        return embedding
+
+def create_vector_emb_v0(text):
+    if text != '':
+        cleaned_text = clean_text(text)
+        inputs = tokenizer(cleaned_text, return_tensors="pt", truncation=True, max_length=128)
+        outputs = model(**inputs)
+        embedding = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()  # Take mean of the last hidden state
         return embedding
     
 

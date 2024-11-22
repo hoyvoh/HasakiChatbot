@@ -158,7 +158,7 @@ def switch(signal, message, pc, mongo):
         product_ids = []
 
         for product_term in product_terms:
-            res1 = pc.query_index_name_to_id(namespace=namespace, query=product_term, topk=10)
+            res1 = pc.query_index_name_to_id(namespace=namespace, query=product_term, topk=5)
             pids = get_pids_from_pc_response(res1)
             product_ids.extend(pids)
         
@@ -189,13 +189,13 @@ def switch(signal, message, pc, mongo):
             tokenized_product = ViTokenizer.tokenize(product)
             
             # query embedding in Product Index (Title +  ID) => top 1 product id
-            res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=10)
+            res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
             pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
             
             
-            res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=10)
+            res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
             pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
-            print("top 20 pid: ", pid_list_by_pname + pid_list_by_desc)
+            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
             
             # query ID in product collection => metadata
             metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
