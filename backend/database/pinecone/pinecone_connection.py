@@ -53,7 +53,7 @@ class PineConeDB():
         )
         metadata = []
         for match in query_response['matches']:
-            metadata.append({'title': match['metadata']['title'], 'content': match['metadata']['content'], 'link': match['metadata']['link']})
+            metadata.append({'title': match['metadata'].get('title'), 'content': match['metadata'].get('content'), 'link': match['metadata'].get('link')})
         
         return metadata
 
