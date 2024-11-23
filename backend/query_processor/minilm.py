@@ -30,7 +30,6 @@ def get_decision(query):
     {'signal':5,'budget':'<budget>','product_term':'<Danh sách các term về sản phẩm>'}; 
     chú ý, budget phải là một con số hoặc một string có thể chuyển thành int một cách trực tiếp.
     product term ở đây là một danh sách các danh mục liên quan đến mỹ phẩm, trang điểm, dầu gội, chăm sóc da, tóc... và được cách nhau bởi dấu phẩy. Tối đa 3 danh mục.
-    
     Nếu yêu cầu không cụ thể về sản phẩm nào, trả lại theo cú pháp: {'signal':3, 'product_term':'<mô tả sản phẩm>','others':'<thông tin khác>'}
 
     '''
