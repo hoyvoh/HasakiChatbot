@@ -40,7 +40,8 @@ class OpenAIClient:
             return None
 
     def add_to_history(self, role, content):
-        self.history.append({"role": role, "content": content})
+        if role !="system":
+            self.history.append({"role": role, "content": content})
 
     def trim_history(self, max_messages=5):
         if len(self.history) > max_messages:
@@ -48,24 +49,18 @@ class OpenAIClient:
             trimmed_history = self.history[-max_messages:]
             self.history = system_message + [msg for msg in trimmed_history if msg["role"] != "system"]
 
-    def ensure_system_message(self, prompt):
-        """
-        Ensures that the system message exists in the conversation history.
-        """
-        if not any(msg["role"] == "system" for msg in self.history):
-            self.add_to_history("system", prompt)
-
     def get_response(self, user_message, prompt, optimize_history=True):
-        self.ensure_system_message(prompt)
         self.add_to_history("user", user_message)
 
         if optimize_history:
-            self.trim_history(max_messages=7)
+            self.trim_history(max_messages=5)
+
+        messages = [{"role": "system", "content": prompt}] + self.history
 
         try:
             completion = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=self.history
+                messages=messages  
             )
             assistant_response = completion.choices[0].message.content
             self.add_to_history("assistant", assistant_response)
@@ -77,17 +72,19 @@ class OpenAIClient:
             logger.error(f"Error in get_response: {e}")
             return f"An error occurred: {e}"
 
+
     def get_json_from_prompt(self, user_message, prompt, optimize_history=True):
-        self.ensure_system_message(prompt)
         self.add_to_history("user", user_message)
 
         if optimize_history:
-            self.trim_history(max_messages=1)
+            self.trim_history(max_messages=5)
+
+        messages = [{"role": "system", "content": prompt}] + self.history
 
         try:
             completion = self.client.chat.completions.create(
                 model=self.model_name,
-                messages=self.history,
+                messages=messages,  
                 response_format={"type": "json_object"}
             )
             assistant_response = completion.choices[0].message.content
@@ -103,6 +100,7 @@ class OpenAIClient:
         except Exception as e:
             logger.error(f"Error in get_json_from_prompt: {e}")
             return {"error": str(e)}
+
 
 
 
