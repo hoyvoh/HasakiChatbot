@@ -29,7 +29,7 @@ class PineConeDB():
         return self.pc.Index(index_name)
     
     @time_it_ms
-    def query_index_name_to_id(self, query, indexname='hasaki-index-v2', namespace='product-pname-namespace', topk=3):
+    def query_index_name_to_id(self, query, indexname='hasaki-index-v3', namespace='product-pname-namespace', topk=3):
         index = self.pc.Index(indexname)
         embeddings = create_vector_emb(query)
         query_response = index.query(
