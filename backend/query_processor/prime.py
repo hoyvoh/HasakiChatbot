@@ -50,8 +50,9 @@ def extract_support_to_natural_language(data):
     natural_language_output = []
     for info in data:
         support_des = (
-            f"Information to find answer to help: {info['content']}, "
-            f"Give user link the most suitable: {info['link']}, "
+            f"Vấn đề cần hỗ trợ: {info.get('title')}, "
+            f"Thông tin để hỗ trợ khách hàng: {info.get('content')}, "
+            f"Link dẫn đến web hỗ trợ: {info.get('link')} "
         )
 
         natural_language_output.append(support_des)
@@ -232,4 +233,4 @@ if __name__ == '__main__':
     #print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
     # print(generate_answer('Son dưỡng 3CE khác gì son dưỡng vaseline', openai, pc, mongo))
     # print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
-    print(generate_answer('Son Bóng Maybelline 15', openai, pc, mongo))
+    print(generate_answer('Hỗ trợ tôi thông tin về chính sách đổi trả', openai, pc, mongo))

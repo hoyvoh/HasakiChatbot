@@ -1,7 +1,7 @@
 from pinecone import Pinecone, ServerlessSpec
 import os
 import sys
-from .pc_utils import create_vector_emb, time_it_ms, create_vector_emb_v0
+from .pc_utils import create_vector_emb, time_it_ms
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
 
@@ -42,8 +42,8 @@ class PineConeDB():
     
     @time_it_ms
     def query_support_metadata(self, query):
-        index = self.pc.Index('hasaki-index')
-        query_embedded = create_vector_emb_v0(query)
+        index = self.pc.Index('hasaki-index-v3')
+        query_embedded = create_vector_emb(query)
         query_response = index.query(
             vector=query_embedded,
             top_k=2,
@@ -53,7 +53,7 @@ class PineConeDB():
         )
         metadata = []
         for match in query_response['matches']:
-            metadata.append({'content': match['metadata']['content'], 'title': match['metadata']['title'], 'link': match['metadata']['link']})
+            metadata.append({'title': match['metadata']['title'], 'content': match['metadata']['content'], 'link': match['metadata']['link']})
         
         return metadata
 
