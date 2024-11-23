@@ -31,17 +31,17 @@ def extract_products_to_natural_language(data):
         pname = product.get('pname', 'Unknown Product')
         price = product.get('price', 0)
         plink = product.get('plink', '')
-        p_cmt_neg = product.get('cmt_summary_NEG','')
-        p_cmt_pos = product.get('cmt_summary_POS','')
-        p_cmt_neu = product.get('cmt_summary_NEU','')
+        p_cmt = product.get('comments','')
+        usage = product.get('usage','')
+        desc = product.get('description','')
         price_formatted = f"{price:,} VND"
         product_description = (
             f"Product Name: {pname}, "
             f"Price: {price_formatted}, "
             f"Link: {plink}, "
-            f"Positive reviews: {p_cmt_pos}, "
-            f"Negative reviews: {p_cmt_neg}, "
-            f"Neutral reviews: {p_cmt_neu}."
+            f"Reviews: {p_cmt},"
+            f"Usage: {usage},"
+            f"Description: {desc}"
         )
         natural_language_output.append(product_description)
     return "\n".join(natural_language_output)
@@ -118,19 +118,6 @@ def switch(signal, message, pc, mongo):
         return document
 
     elif signal == 2:
-        '''product1 = ViTokenizer.tokenize(str(message['product_term_1']))
-        product2 = ViTokenizer.tokenize(str(message['product_term_2']))
-
-        res1 = pc.query_index_name_to_id(query=product1)
-        pids = get_pids_from_pc_response(res1)
-        
-        res2 = pc.query_index_name_to_id(query=product2)
-        pid2 = get_pids_from_pc_response(res2)
-        
-        for i in range(len(pid2)):
-            pids.append(pid2[i])
-        print(pids)
-        metadata = mongo.query_pids(pids)'''
         docs = ""
         for key, value in message.items():
             if key.startswith('product_term_'):

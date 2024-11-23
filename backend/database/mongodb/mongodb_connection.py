@@ -80,7 +80,7 @@ class MongoDB():
         
         try:
             product_ids = list(map(int, product_ids))
-            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'desc':1, 'ingredients':1, 'rating':1,'cmt_summary_NEG':1, 'cmt_summary_POS':1}
+            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'description':1, 'ingredients':1, 'rating':1,'comments':1, 'usage':1}
             
             results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
             products = list(results)
@@ -91,25 +91,15 @@ class MongoDB():
             else:
                 metadata = []
                 for product_in4 in products:
-                    
-                    # if product_in4['count_POS'] > max(product_in4['count_NEG'], product_in4['count_NEU']):
-                    #     feedback = "Tốt"
-                    # elif product_in4['count_NEG'] > max(product_in4['count_POS'], product_in4['count_NEU']):
-                    #     feedback = "xấu"
-                    # elif product_in4['count_NEU'] > max(product_in4['count_POS'], product_in4['count_NEG']):
-                    #     feedback = "bình thường"
-                    # else:
-                    #     feedback = "không rõ"
-
                     doc = f"""
                     Tên sản phẩm: {product_in4.get('pname', '')}
                     Giá: {product_in4.get('price')}
-                    Link: {product_in4.get('plink')}
+                    Đường dẫn sản phẩm: {product_in4.get('plink')}
                     Mô tả: {product_in4.get('desc')}
                     Thành phần: {product_in4.get('ingredients')}
                     Điểm rating: {product_in4.get('rating')}
-                    Đánh giá tích cực: {product_in4.get('cmt_summary_POS')}
-                    Đánh giá tiêu cực: {product_in4.get('cmt_summary_NEG')}"""
+                    Đánh giá: {product_in4.get('comments')}
+                    Hướng dẫn sử dụng: {product_in4.get('usage')}"""
                     
                     metadata.append(doc)
                 return metadata
@@ -125,7 +115,7 @@ class MongoDB():
         try:
             # Convert product_ids to integers to match the MongoDB `pid` field
             product_ids = list(map(int, product_ids))
-            fields_to_return = {'pname':1, 'plink':1, 'price':1,'desc':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
+            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'description':1, 'ingredients':1, 'rating':1,'comments':1, 'usage':1}
             
             # Step 1: Fetch relevant products by product_ids
             results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
@@ -145,7 +135,8 @@ class MongoDB():
 
     def query_pids_with_filter(self, pid_list, message, collection_name='product_data'):
         col = self.collection(collection_name=collection_name)
-        fields_to_return = {'pname':1, 'plink':1, 'price':1, 'rating':1, 'cmt_summary_NEG': 1, 'cmt_summary_NEU': 1, 'cmt_summary_POS':1}
+        fields_to_return = {'pname':1, 'price':1, 'plink':1, 'description':1, 'ingredients':1, 'rating':1,'comments':1, 'usage':1}
+
         result = []
         try:
             pid_list = list(map(int, pid_list))
