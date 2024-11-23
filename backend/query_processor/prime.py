@@ -210,7 +210,7 @@ def get_document(query, pc, mongo):
     message = decided_json
     document = switch(signal, message, pc, mongo)
     additional = query_assistant(query=query, top_k=3)
-    document = str(document)+'\n'+ additional
+    document = additional+ '\n' +str(document)
     return document
 
 def generate_answer(query, client, pc, mongo):

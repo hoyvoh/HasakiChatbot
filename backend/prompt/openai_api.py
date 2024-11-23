@@ -1,9 +1,10 @@
 from openai import OpenAI 
 import os
 import json
-import time
 from dotenv import load_dotenv
 # import prompt_design
+import json
+import logging
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 load_dotenv()
@@ -12,15 +13,19 @@ API_KEY = os.getenv("OPENAI_API_KEY")
 MODEL = os.getenv("OPENAI_MODEL")
 EMBEDDING_MODEL = os.getenv("OPENAI_EMBEDDING")
 
+
+
+logging.basicConfig(level=logging.ERROR)
+logger = logging.getLogger(__name__)
+
 class OpenAIClient:
     def __init__(self, api_key=API_KEY, model_name=MODEL, embedding_model=EMBEDDING_MODEL):
         self.api_key = api_key
         self.model_name = model_name
-        self.embedding_model= embedding_model
+        self.embedding_model = embedding_model
         self.history = []
         self.last_request_time = None
-        if self.api_key and self.model_name:
-            self.client = OpenAI(api_key=API_KEY)
+        self.client = OpenAI(api_key=self.api_key) if self.api_key else None
 
     def get_embeddings(self, input, mode='float'):  # mode: float | base64
         try:
@@ -29,24 +34,33 @@ class OpenAIClient:
                 input=input,
                 encoding_format=mode
             )
-            
-            embeddings = response.data[0].embedding
-            return embeddings
+            return response.data[0].embedding
         except Exception as e:
-            print(f"Error fetching embeddings: {e}")
+            logger.error(f"Error fetching embeddings: {e}")
             return None
-
 
     def add_to_history(self, role, content):
         self.history.append({"role": role, "content": content})
 
-    def get_response(self, user_message, prompt, optimize_history=True):
+    def trim_history(self, max_messages=15):
+        if len(self.history) > max_messages:
+            system_message = [msg for msg in self.history if msg["role"] == "system"]
+            trimmed_history = self.history[-max_messages:]
+            self.history = system_message + [msg for msg in trimmed_history if msg["role"] != "system"]
+
+    def ensure_system_message(self, prompt):
+        """
+        Ensures that the system message exists in the conversation history.
+        """
         if not any(msg["role"] == "system" for msg in self.history):
             self.add_to_history("system", prompt)
 
+    def get_response(self, user_message, prompt, optimize_history=True):
+        self.ensure_system_message(prompt)
         self.add_to_history("user", user_message)
-        if optimize_history and len(self.history) > 100:  
-            self.trim_history(max_messages=10)
+
+        if optimize_history:
+            self.trim_history(max_messages=15)
 
         try:
             completion = self.client.chat.completions.create(
@@ -54,21 +68,21 @@ class OpenAIClient:
                 messages=self.history
             )
             assistant_response = completion.choices[0].message.content
-
             self.add_to_history("assistant", assistant_response)
-
             return assistant_response
-
+        except IndexError:
+            logger.error("The API response was empty or invalid.")
+            return "The API response was empty or invalid."
         except Exception as e:
+            logger.error(f"Error in get_response: {e}")
             return f"An error occurred: {e}"
-    
+
     def get_json_from_prompt(self, user_message, prompt, optimize_history=True):
-        if not any(msg["role"] == "system" for msg in self.history):
-            self.add_to_history("system", prompt)
+        self.ensure_system_message(prompt)
         self.add_to_history("user", user_message)
 
-        if optimize_history and len(self.history) > 15:
-            self.trim_history(max_messages=10)
+        if optimize_history:
+            self.trim_history(max_messages=15)
 
         try:
             completion = self.client.chat.completions.create(
@@ -77,17 +91,19 @@ class OpenAIClient:
                 response_format={"type": "json_object"}
             )
             assistant_response = completion.choices[0].message.content
-            try:
-                response_json = json.loads(assistant_response)
-                return response_json
-            except json.JSONDecodeError:
-                return {
-                    "error": "Failed to parse response as JSON",
-                    "response": assistant_response,
-                }
 
+            try:
+                return json.loads(assistant_response)
+            except json.JSONDecodeError:
+                logger.error("Failed to parse response as JSON")
+                return {"error": "Failed to parse response as JSON", "response": assistant_response}
+        except IndexError:
+            logger.error("The API response was empty or invalid.")
+            return {"error": "The API response was empty or invalid."}
         except Exception as e:
+            logger.error(f"Error in get_json_from_prompt: {e}")
             return {"error": str(e)}
+
 
 
 

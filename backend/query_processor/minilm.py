@@ -27,8 +27,8 @@ def get_decision(query):
         Và <price> phải được chuyển về theo dạng ví dụ 10k là 10000.
     (4) Nếu người dùng cần hỗ trợ về các chính sách mua hàng, giao hàng, đổi trả, hỗ trợ kỹ thuật, hãy trả lời với cú pháp: {'signal':4,'query':'<query>'}
     (5) Nếu người dùng cung cấp một số tiền và cần hỗ trợ mua hàng dựa trên số tiền hiện có, hãy trả lời với cú pháp: 
-    {'signal':5,'budget':'<budget>','product_term':'<Danh sách các term về sản phẩm>'}; 
-    chú ý, budget phải là một con số hoặc một string có thể chuyển thành int một cách trực tiếp.
+    {'signal':5,'budget':<budget>,'product_term':'<Danh sách các term về sản phẩm>'}; 
+    chú ý, budget là ngân sách, phải là một con số hoặc một string có thể chuyển thành int một cách trực tiếp.
     product term ở đây là một danh sách các sản phẩm gồm sản phẩm đầu là sản phẩm chính và các sản phẩm sau là sản phẩm mà người dùng có thể cũng mua chung được cách nhau bởi dấu phẩy
     
     Nếu yêu cầu không cụ thể về sản phẩm nào, trả lại theo cú pháp: {'signal':3, 'product_term':'<mô tả sản phẩm>','others':'<thông tin khác>'}

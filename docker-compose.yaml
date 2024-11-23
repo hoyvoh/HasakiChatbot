@@ -11,7 +11,7 @@ services:
       - sharedNetwork
     env_file:
       - .env
-    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
@@ -25,7 +25,7 @@ services:
       - LOCALHOST=http://backend:8000
     env_file:
       - .env
-    command: streamlit run app.py --server.port 8501
+    command: streamlit run app.py
 
 networks:
   sharedNetwork:
