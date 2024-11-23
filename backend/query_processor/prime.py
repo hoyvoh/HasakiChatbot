@@ -111,8 +111,9 @@ def switch(signal, message, pc, mongo):
         metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
         brand = message.get('brand', '')
         origin = message.get('origin', '')
-        additional = query_assistant(query=product, brand=brand, origin=origin, top_k=3)
-        document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}:\n'+additional+str(metadata)
+        sort = message.get('sort', '')
+        additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
+        document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo{sort}:\n'+additional+str(metadata)
         return document
 
     elif signal == 2:
@@ -207,9 +208,11 @@ def switch(signal, message, pc, mongo):
     metadata = extract_products_to_natural_language(metadata)
     brand = message.get('brand', '')
     origin = message.get('origin', '')
-    additional = query_assistant(query=product, brand=brand, origin=origin, top_k=3)
-    document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}:\n'+additional+str(metadata)
-    return metadata
+    sort = message.get('sort', '')
+    additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
+    print(additional)
+    document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo {sort}:\n'+additional+str(metadata)
+    return document
 
 def get_document(query, pc, mongo):
     decided_json = get_decision(query)
@@ -223,6 +226,7 @@ def generate_answer(query, client, pc, mongo):
     document = get_document(query, pc, mongo)
     print("Doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
+    print("The guide:", guide)
 
     chat_response = client.get_response(prompt = guide, user_message = query)
     return chat_response
