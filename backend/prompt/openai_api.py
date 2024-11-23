@@ -42,7 +42,7 @@ class OpenAIClient:
     def add_to_history(self, role, content):
         self.history.append({"role": role, "content": content})
 
-    def trim_history(self, max_messages=15):
+    def trim_history(self, max_messages=5):
         if len(self.history) > max_messages:
             system_message = [msg for msg in self.history if msg["role"] == "system"]
             trimmed_history = self.history[-max_messages:]
@@ -60,7 +60,7 @@ class OpenAIClient:
         self.add_to_history("user", user_message)
 
         if optimize_history:
-            self.trim_history(max_messages=15)
+            self.trim_history(max_messages=7)
 
         try:
             completion = self.client.chat.completions.create(
@@ -82,7 +82,7 @@ class OpenAIClient:
         self.add_to_history("user", user_message)
 
         if optimize_history:
-            self.trim_history(max_messages=15)
+            self.trim_history(max_messages=1)
 
         try:
             completion = self.client.chat.completions.create(

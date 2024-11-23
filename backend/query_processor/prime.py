@@ -102,7 +102,6 @@ def switch(signal, message, pc, mongo):
         product = str(message['product_term'])
         product = ViTokenizer.tokenize(product)
 
-        # query embedding in Product Index (Title +  ID) => top 1 product id
         res = pc.query_index_name_to_id(query=product)
         pids = get_pids_from_pc_response(res)
         
@@ -110,6 +109,11 @@ def switch(signal, message, pc, mongo):
         print(score)
         # query ID in product collection => metadata
         metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
+        brand = message.get('brand', '')
+        origin = message.get('origin', '')
+        additional = query_assistant(query=product, brand=brand, origin=origin, top_k=3)
+        document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}:\n'+additional+str(metadata)
+        return document
 
     elif signal == 2:
         '''product1 = ViTokenizer.tokenize(str(message['product_term_1']))
@@ -201,6 +205,10 @@ def switch(signal, message, pc, mongo):
             metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
 
     metadata = extract_products_to_natural_language(metadata)
+    brand = message.get('brand', '')
+    origin = message.get('origin', '')
+    additional = query_assistant(query=product, brand=brand, origin=origin, top_k=3)
+    document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}:\n'+additional+str(metadata)
     return metadata
 
 def get_document(query, pc, mongo):
@@ -209,8 +217,6 @@ def get_document(query, pc, mongo):
     signal = int(decided_json['signal'])
     message = decided_json
     document = switch(signal, message, pc, mongo)
-    additional = query_assistant(query=query, top_k=3)
-    document = additional+ '\n' +str(document)
     return document
 
 def generate_answer(query, client, pc, mongo):
