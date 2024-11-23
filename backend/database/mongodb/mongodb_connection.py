@@ -80,7 +80,7 @@ class MongoDB():
         
         try:
             product_ids = list(map(int, product_ids))
-            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'desc':1, 'ingredients':1, 'rating':1, 'count_NEG':1,'count_NEU':1, 'count_POS':1}
+            fields_to_return = {'pname':1, 'price':1, 'plink':1, 'desc':1, 'ingredients':1, 'rating':1,'cmt_summary_NEG':1, 'cmt_summary_POS':1}
             
             results = col.find({"pid": {"$in": product_ids}}, fields_to_return)
             products = list(results)
@@ -92,23 +92,24 @@ class MongoDB():
                 metadata = []
                 for product_in4 in products:
                     
-                    if product_in4['count_POS'] > max(product_in4['count_NEG'], product_in4['count_NEU']):
-                        feedback = "Tốt"
-                    elif product_in4['count_NEG'] > max(product_in4['count_POS'], product_in4['count_NEU']):
-                        feedback = "xấu"
-                    elif product_in4['count_NEU'] > max(product_in4['count_POS'], product_in4['count_NEG']):
-                        feedback = "bình thường"
-                    else:
-                        feedback = "không rõ"
+                    # if product_in4['count_POS'] > max(product_in4['count_NEG'], product_in4['count_NEU']):
+                    #     feedback = "Tốt"
+                    # elif product_in4['count_NEG'] > max(product_in4['count_POS'], product_in4['count_NEU']):
+                    #     feedback = "xấu"
+                    # elif product_in4['count_NEU'] > max(product_in4['count_POS'], product_in4['count_NEG']):
+                    #     feedback = "bình thường"
+                    # else:
+                    #     feedback = "không rõ"
 
                     doc = f"""
-                    Tên sản phẩm: {product_in4['pname']}
-                    Giá: {product_in4['price']}
-                    Link: {product_in4['plink']}
-                    Mô tả: {product_in4['desc']}
-                    Thành phần: {product_in4['ingredients']}
-                    Điểm rating: {product_in4['rating']}
-                    Đánh giá của khách hàng phần lớn là: {feedback}"""
+                    Tên sản phẩm: {product_in4.get('pname', '')}
+                    Giá: {product_in4.get('price')}
+                    Link: {product_in4.get('plink')}
+                    Mô tả: {product_in4.get('desc')}
+                    Thành phần: {product_in4.get('ingredients')}
+                    Điểm rating: {product_in4.get('rating')}
+                    Đánh giá tích cực: {product_in4.get('cmt_summary_POS')}
+                    Đánh giá tiêu cực: {product_in4.get('cmt_summary_NEG')}"""
                     
                     metadata.append(doc)
                 return metadata

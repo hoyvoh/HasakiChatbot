@@ -19,6 +19,8 @@ Cấu trúc câu trả lời nên gồm có:
 Nếu như khách hàng hỏi về hỗ trợ thì bạn sẽ chỉ làm làm các bước sau.
 - Bạn nãy đưa ra các bước làm để hỗ trợ khách hàng.
 - Luôn dẫn link cho khách hàng để khách hàng có thể đọc thêm (không được đưa đường dẫn nếu tài liệu không đề cập).
+
+Nếu yêu cầu liên quan đến so sánh sản phẩm. Hãy so sánh cụ thể về giá, rating, reviews/ nhận xét người dùng, chức năng sản phẩm. Và đưa ra kết luận theo yêu cầu của khách hàng. Mỗi sản phẩm cần so sánh chỉ đưa ra tối đa 2 sản phẩm.
 '''
 
 prompt = PromptTemplate(
