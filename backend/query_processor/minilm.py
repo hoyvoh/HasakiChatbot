@@ -34,7 +34,35 @@ def get_decision(query):
     - Operator: $gte, $lte cho giá hoặc rating
     - Giá: Chuyển thành số (ví dụ, 10k thành 10000)
 
-    (4) Nếu người dùng cần hỗ trợ hãy trả lời với cú pháp: {'signal':4,'query':'<loại vấn đề cần hỗ trợ>'}. Trong đó loại <loại vấn đề cần hỗ trợ> phải thuộc 1 trong các vấn đề sau: "Tài khoản, Đặt hàng trực tuyến, Quy cách đóng gói sản phẩm, Vận chuyển 2H, Phí vận chuyển, Đổi trả và hoàn tiền, Dịch vụ Spa, Tuyển dụng, Hướng dẫn đăng ký thành viên Hasaki, Có cần đặt lịch trước khi đến spa, Tại sao không thể đăng nhập vào tài khoản, Cách đặt dịch vụ, Sử dụng chung tài khoản với người khác có được không, Khám da tại spa Hasaki có tốn phí không, Giới thiệu về Hasaki, Khách hàng thân thiết, Hướng dẫn đổi quà, Hướng dẫn mua hàng, Hướng dẫn đặt hàng 2H, Hướng dẫn thanh toán trực tuyến, Thẻ quà tặng Got It, Phiếu mua hàng, Chính sách vận chuyển giao nhận, Điều khoản sử dụng, Chính sách bảo mật, Hướng dẫn tải và sử dụng App Hasaki", hãy đọc thật kỹ và lựa chọn đúng vấn đề cần hỗ trợ của khách hàng.
+    (4) Nếu người dùng cần hỗ trợ hãy trả lời với cú pháp: {'signal':4,'query':'<loại vấn đề cần hỗ trợ>'}.
+    Trong đó loại <loại vấn đề cần hỗ trợ> bắt buộc phải thuộc 1 trong 26 vấn đề dưới đây:
+        1. 'Tài khoản',
+        2. 'Đặt hàng trực tuyến',
+        3. 'Quy cách đóng gói sản phẩm',
+        4. 'Vận chuyển 2H',
+        5. 'Phí vận chuyển',
+        6. 'Đổi trả và hoàn tiền',
+        7. 'Dịch vụ Spa',
+        8. 'Tuyển dụng',
+        9. 'Hướng dẫn đăng ký thành viên Hasaki.',
+        10. 'Có cần đặt lịch trước khi đến spa?',
+        11. 'Tại sao không thể đăng nhập vào tài khoản?',
+        12. 'Cách đặt dịch vụ.',
+        13. 'Sử dụng chung tài khoản với người khác có được không?',
+        14. 'Khám da tại spa Hasaki có tốn phí không?',
+        15. 'Giới thiệu về Hasaki',
+        16. 'Khách hàng thân thiết',
+        17. 'Hướng dẫn đổi quà',
+        18. 'Hướng dẫn mua hàng',
+        19. 'Hướng dẫn đặt hàng 2H',
+        20. 'Hướng dẫn thanh toán trực tuyến',
+        21. 'Thẻ quà tặng Got It',
+        22. 'Phiếu mua hàng',
+        23. 'Chính sách vận chuyển giao nhận',
+        24. 'Điều khoản sử dụng',
+        25. 'Chính sách bảo mật',
+        26. 'Hướng dẫn tải và sử dụng App Hasaki'
+    Hãy đọc thật kỹ câu hỏi của khách hàng và lựa chọn đúng vấn đề cần hỗ trợ của khách hàng. Phải phân tích kỹ.
     
     (5) Nếu người dùng có ngân sách và cần hỗ trợ mua hàng, trả lời: {'signal':5,'budget':'<ngân sách>','product_term':'<danh sách sản phẩm>'}.
     - Ngân sách: Số hoặc chuỗi có thể chuyển thành int.

@@ -168,3 +168,15 @@ class MongoDB():
         except Exception as e:
             print(f"Error querying PID: {e}")
             return {"products": []}
+        
+    def query_support(self, support_query):
+        col = self.collection(collection_name='supports')
+        try:
+            result = col.find_one({"title": {"$regex": support_query, "$options": "i"}},  {"title": 1, "link": 1, "content": 1})
+        
+        except Exception as e:
+            print(f"Error querying support data: {e}")
+            return {}
+        
+        return result
+ 

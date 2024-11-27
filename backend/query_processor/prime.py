@@ -47,7 +47,7 @@ def extract_products_to_natural_language(data):
     return "\n".join(natural_language_output)
 
 def extract_support_to_natural_language(data):
-    natural_language_output = []
+    '''natural_language_output = []
     for info in data:
         support_des = (
             f"Vấn đề cần hỗ trợ: {info.get('title')}, "
@@ -56,7 +56,14 @@ def extract_support_to_natural_language(data):
         )
 
         natural_language_output.append(support_des)
-    return "\n".join(natural_language_output)
+    return "\n".join(natural_language_output)'''
+
+    support_language = (
+            f"Vấn đề cần hỗ trợ: {data.get('title')}, "
+            f"Thông tin để hỗ trợ khách hàng: {data.get('content')}, "
+            f"Link dẫn đến web hỗ trợ: {data.get('link')} "
+        )
+    return support_language
 
 # Determine tolerable solution
 def suggest_based_on_budget(data, tolerance=0.1, top_n=3):
@@ -132,8 +139,9 @@ def switch(signal, message, pc, mongo):
 
 
     elif signal == 4:
-        query = ViTokenizer.tokenize(str(message['query']))
-        metadata = pc.query_support_metadata(query)
+        #query = ViTokenizer.tokenize(str(message['query']))
+        query = str(message['query'])
+        metadata = mongo.query_support(query)
         
         return extract_support_to_natural_language(metadata)
 
@@ -223,5 +231,5 @@ def generate_answer(query, client, pc, mongo):
 if __name__ == '__main__':
     #print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
     # print(generate_answer('Son dưỡng 3CE khác gì son dưỡng vaseline', openai, pc, mongo))
-    # print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
-    print(generate_answer('Hỗ trợ tôi thông tin về chính sách đổi trả', openai, pc, mongo))
+     print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
+    #print(generate_answer('Hỗ trợ tôi thông tin về chính sách đổi trả', openai, pc, mongo))
