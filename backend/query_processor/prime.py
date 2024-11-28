@@ -33,31 +33,39 @@ def extract_products_to_natural_language(data):
         pname = product.get('pname', 'Unknown Product')
         price = product.get('price', 0)
         plink = product.get('plink', '')
-        p_cmt_neg = product.get('cmt_summary_NEG','')
-        p_cmt_pos = product.get('cmt_summary_POS','')
-        p_cmt_neu = product.get('cmt_summary_NEU','')
+        p_cmt = product.get('comments','')
+        usage = product.get('usage','')
+        desc = product.get('description','')
         price_formatted = f"{price:,} VND"
         product_description = (
             f"Product Name: {pname}, "
             f"Price: {price_formatted}, "
             f"Link: {plink}, "
-            f"Positive reviews: {p_cmt_pos}, "
-            f"Negative reviews: {p_cmt_neg}, "
-            f"Neutral reviews: {p_cmt_neu}."
+            f"Reviews: {p_cmt},"
+            f"Usage: {usage},"
+            f"Description: {desc}"
         )
         natural_language_output.append(product_description)
     return "\n".join(natural_language_output)
 
 def extract_support_to_natural_language(data):
-    natural_language_output = []
+    '''natural_language_output = []
     for info in data:
         support_des = (
-            f"Information to find answer to help: {info['content']}, "
-            f"Give user link the most suitable: {info['link']}, "
+            f"Vấn đề cần hỗ trợ: {info.get('title')}, "
+            f"Thông tin để hỗ trợ khách hàng: {info.get('content')}, "
+            f"Link dẫn đến web hỗ trợ: {info.get('link')} "
         )
 
         natural_language_output.append(support_des)
-    return "\n".join(natural_language_output)
+    return "\n".join(natural_language_output)'''
+
+    support_language = (
+            f"Vấn đề cần hỗ trợ: {data.get('title')}, "
+            f"Thông tin để hỗ trợ khách hàng: {data.get('content')}, "
+            f"Link dẫn đến web hỗ trợ: {data.get('link')} "
+        )
+    return support_language
 
 def suggest_based_on_budget(data, tolerance=0.1, top_n=3, similarity_threshold=0.9):
     budget = data["budget"]
@@ -108,7 +116,6 @@ def switch(signal, message, pc, mongo):
         product = str(message['product_term'])
         product = ViTokenizer.tokenize(product)
 
-        # query embedding in Product Index (Title +  ID) => top 1 product id
         res = pc.query_index_name_to_id(query=product)
         pids = get_pids_from_pc_response(res)
         
@@ -116,21 +123,14 @@ def switch(signal, message, pc, mongo):
         print(score)
         # query ID in product collection => metadata
         metadata = mongo.query_relevant_products_within_budget(product_ids=pids, budget=0)
+        brand = message.get('brand', '')
+        origin = message.get('origin', '')
+        sort = message.get('sort', '')
+        additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
+        document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo{sort}:\n'+additional+str(metadata)
+        return document
 
     elif signal == 2:
-        '''product1 = ViTokenizer.tokenize(str(message['product_term_1']))
-        product2 = ViTokenizer.tokenize(str(message['product_term_2']))
-
-        res1 = pc.query_index_name_to_id(query=product1)
-        pids = get_pids_from_pc_response(res1)
-        
-        res2 = pc.query_index_name_to_id(query=product2)
-        pid2 = get_pids_from_pc_response(res2)
-        
-        for i in range(len(pid2)):
-            pids.append(pid2[i])
-        print(pids)
-        metadata = mongo.query_pids(pids)'''
         docs = ""
         for key, value in message.items():
             if key.startswith('product_term_'):
@@ -145,8 +145,9 @@ def switch(signal, message, pc, mongo):
 
 
     elif signal == 4:
-        query = ViTokenizer.tokenize(str(message['query']))
-        metadata = pc.query_support_metadata(query)
+        #query = ViTokenizer.tokenize(str(message['query']))
+        query = str(message['query'])
+        metadata = mongo.query_support(query)
         
         return extract_support_to_natural_language(metadata)
 
@@ -212,7 +213,13 @@ def switch(signal, message, pc, mongo):
             print("After:",metadata)
 
     metadata = extract_products_to_natural_language(metadata)
-    return metadata
+    brand = message.get('brand', '')
+    origin = message.get('origin', '')
+    sort = message.get('sort', '')
+    additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
+    print(additional)
+    document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo {sort}:\n'+additional+str(metadata)
+    return document
 
 def get_document(query, pc, mongo):
     decided_json = get_decision(query)
@@ -220,14 +227,13 @@ def get_document(query, pc, mongo):
     signal = int(decided_json['signal'])
     message = decided_json
     document = switch(signal, message, pc, mongo)
-    additional = query_assistant(query=query, top_k=3)
-    document = additional+ '\n' +str(document)
     return document
 
 def generate_answer(query, client, pc, mongo):
     document = get_document(query, pc, mongo)
     print("Doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
+    print("The guide:", guide)
 
     chat_response = client.get_response(prompt = guide, user_message = query)
     return chat_response
@@ -236,5 +242,5 @@ def generate_answer(query, client, pc, mongo):
 if __name__ == '__main__':
     #print(generate_answer('Dầu gội đầu thảo dược Thái Dương nay có khuyến mãi gì không?', awan))
     # print(generate_answer('Son dưỡng 3CE khác gì son dưỡng vaseline', openai, pc, mongo))
-    # print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
-    print(generate_answer('Son Bóng Maybelline 15', openai, pc, mongo))
+     print(generate_answer('với 500k, gợi ý tôi mua gì cho 20.11', openai, pc, mongo))
+    #print(generate_answer('Hỗ trợ tôi thông tin về chính sách đổi trả', openai, pc, mongo))
