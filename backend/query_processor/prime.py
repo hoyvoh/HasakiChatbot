@@ -11,8 +11,10 @@ from .minilm import get_decision
 from prompt import PROMPT_TEMPLATE, AwanAPI, OpenAIClient
 from database import PineConeDB, MongoDB, get_pids_from_pc_response, get_similar_metrics
 from itertools import combinations
+import Levenshtein as lev
 from pyvi import ViTokenizer
 from .query_assistant import query_assistant
+from .filter_similar import filter_similar_products
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
@@ -57,18 +59,24 @@ def extract_support_to_natural_language(data):
         natural_language_output.append(support_des)
     return "\n".join(natural_language_output)
 
-# Determine tolerable solution
-def suggest_based_on_budget(data, tolerance=0.1, top_n=3):
+def suggest_based_on_budget(data, tolerance=0.1, top_n=3, similarity_threshold=0.9):
     budget = data["budget"]
     products = data["products"]
+    def filter_similar_products(products, threshold):
+        filtered_products = []
+        for product in products:
+            if all(lev.ratio(product['pname'], other['pname']) < threshold for other in filtered_products):
+                filtered_products.append(product)
+        return filtered_products
 
-    # Calculate budget range
+    filtered_products = filter_similar_products(products, similarity_threshold)
     lower_bound = budget * (1 - tolerance)
     upper_bound = budget * (1 + tolerance)
 
     all_solutions = []
-    for r in range(1, len(products) + 1):
-        all_solutions.extend(combinations(products, r))
+    for r in range(1, len(filtered_products) + 1):
+        all_solutions.extend(combinations(filtered_products, r))
+
     legit_solutions = [
         combo for combo in all_solutions
         if lower_bound <= sum(product["price"] for product in combo) <= upper_bound
@@ -81,7 +89,6 @@ def suggest_based_on_budget(data, tolerance=0.1, top_n=3):
             -len(plan)                                             
         )
     )
-
     top_solutions = [
         {
             "products": plan, 
@@ -91,7 +98,6 @@ def suggest_based_on_budget(data, tolerance=0.1, top_n=3):
     ]
     
     return top_solutions
-
 
 def switch(signal, message, pc, mongo):
     metadata = {}
@@ -158,13 +164,16 @@ def switch(signal, message, pc, mongo):
         product_ids = []
 
         for product_term in product_terms:
-            res1 = pc.query_index_name_to_id(namespace=namespace, query=product_term, topk=5)
+            res1 = pc.query_index_name_to_id(namespace=namespace, query=product_term, topk=3)
             pids = get_pids_from_pc_response(res1)
             product_ids.extend(pids)
         
         product_ids = list(set(product_ids))
         metadata = mongo.query_relevant_products_within_budget(product_ids=product_ids, budget=budget)
+        metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
+        
         metadata["budget"] = budget
+        
         solutions = suggest_based_on_budget(metadata, tolerance=0.2)
         document = []
         document.append("\nHãy gợi ý cho khách hàng các cách lựa chọn sau:\n")
@@ -189,16 +198,18 @@ def switch(signal, message, pc, mongo):
             tokenized_product = ViTokenizer.tokenize(product)
             
             # query embedding in Product Index (Title +  ID) => top 1 product id
-            res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
+            res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=8)
             pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
             
             
-            res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
+            res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=8)
             pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
             print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
             
             # query ID in product collection => metadata
             metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
+            metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
+            print("After:",metadata)
 
     metadata = extract_products_to_natural_language(metadata)
     return metadata
