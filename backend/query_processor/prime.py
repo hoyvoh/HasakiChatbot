@@ -49,7 +49,7 @@ def extract_products_to_natural_language(data):
     return "\n".join(natural_language_output)
 
 def extract_support_to_natural_language(data):
-    '''natural_language_output = []
+    natural_language_output = []
     for info in data:
         support_des = (
             f"Vấn đề cần hỗ trợ: {info.get('title')}, "
@@ -58,14 +58,14 @@ def extract_support_to_natural_language(data):
         )
 
         natural_language_output.append(support_des)
-    return "\n".join(natural_language_output)'''
+    return "\n".join(natural_language_output)
 
-    support_language = (
+    '''support_language = (
             f"Vấn đề cần hỗ trợ: {data.get('title')}, "
             f"Thông tin để hỗ trợ khách hàng: {data.get('content')}, "
             f"Link dẫn đến web hỗ trợ: {data.get('link')} "
         )
-    return support_language
+    return support_language'''
 
 def suggest_based_on_budget(data, tolerance=0.1, top_n=3, similarity_threshold=0.9):
     budget = data["budget"]
@@ -145,9 +145,9 @@ def switch(signal, message, pc, mongo):
 
 
     elif signal == 4:
-        #query = ViTokenizer.tokenize(str(message['query']))
-        query = str(message['query'])
-        metadata = mongo.query_support(query)
+        query = ViTokenizer.tokenize(str(message['query']))
+        #query = str(message['query'])
+        metadata = pc.query_support_metadata(query)
         
         return extract_support_to_natural_language(metadata)
 
