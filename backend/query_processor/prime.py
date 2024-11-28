@@ -196,6 +196,9 @@ def switch(signal, message, pc, mongo):
     else: # signal == 3
         if "product_term" in message:
             product = str(message['product_term'])
+            ingredient = str(message.get('product_ingredients', ""))
+            
+            tokenized_ingredient = ViTokenizer.tokenize(ingredient)
             tokenized_product = ViTokenizer.tokenize(product)
             
             # query embedding in Product Index (Title +  ID) => top 1 product id
@@ -205,10 +208,14 @@ def switch(signal, message, pc, mongo):
             
             res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=8)
             pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
-            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
+
+            res_by_ingr = pc.query_index_name_to_id(query=tokenized_ingredient, namespace='product-ingredient-namespace', topk=8)
+            pid_list_by_ingr = get_pids_from_pc_response(res_by_ingr)
+
+            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc + pid_list_by_ingr)
             
             # query ID in product collection => metadata
-            metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
+            metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc + pid_list_by_ingr, message, 'product_data')
             metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
             print("After:",metadata)
 
