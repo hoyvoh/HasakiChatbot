@@ -13,6 +13,7 @@ from database import PineConeDB, MongoDB, get_pids_from_pc_response, get_similar
 from itertools import combinations
 import Levenshtein as lev
 from pyvi import ViTokenizer
+from time import time
 from .query_assistant import query_assistant
 from .filter_similar import filter_similar_products
 
@@ -49,6 +50,7 @@ def extract_products_to_natural_language(data):
     return "\n".join(natural_language_output)
 
 def extract_support_to_natural_language(data):
+    print(data)
     '''natural_language_output = []
     for info in data:
         support_des = (
@@ -198,7 +200,6 @@ def switch(signal, message, pc, mongo):
             product = str(message['product_term'])
             tokenized_product = ViTokenizer.tokenize(product)
             
-            # query embedding in Product Index (Title +  ID) => top 1 product id
             res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=8)
             pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
             
@@ -206,8 +207,7 @@ def switch(signal, message, pc, mongo):
             res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=8)
             pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
             print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
-            
-            # query ID in product collection => metadata
+        
             metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
             metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
             print("After:",metadata)
@@ -234,8 +234,10 @@ def generate_answer(query, client, pc, mongo):
     print("Doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
     print("The guide:", guide)
-
+    start = time()
     chat_response = client.get_response(prompt = guide, user_message = query)
+    end = time()
+    print("Chat returns response after:", end-start)
     return chat_response
 
 

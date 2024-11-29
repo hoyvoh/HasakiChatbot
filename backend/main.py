@@ -8,6 +8,7 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from os import getenv
 from dotenv import load_dotenv
+from time import time
 os.environ.clear()
 load_dotenv()
 
@@ -43,6 +44,9 @@ def read_root():
 
 @app.post('/send-query/')
 async def process_answer(query_request: Query):
+    start = time()
     answer = generate_answer(query_request.query, openai, pc, mongo)
+    end = time()
+    print("Final Execution time:", end-start)
     return {'answer': answer}
 
