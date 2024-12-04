@@ -59,11 +59,19 @@ def query_assistant(query, brand=None, origin=None, sort=None,
     for item in items:
         a_tag = item.find('a', class_='v3_thumb_common_sp')
 
+        discount_item = item.find('span', class_='discount_percent2_deal')
+        discount_percent = discount_item.text.strip() if discount_item else ""
+
+        original_item = item.find('span', class_='item_giacu')
+        original_price = original_item.text.strip() if original_item else ""
+
         if a_tag:
             product = {
                 'url': a_tag.get('href'),
                 'name': a_tag.get('data-name'),
                 'price': a_tag.get('data-price'),
+                'discount': discount_percent,
+                'oprice': original_price,
                 'brand': a_tag.get('data-brand'),
                 'category': a_tag.get('data-category-name'),
                 'variant': a_tag.get('data-variant'),
@@ -72,7 +80,9 @@ def query_assistant(query, brand=None, origin=None, sort=None,
     document = []
     for product in product_details:
         document.append(f"Sản phẩm: {product['name']}")
-        document.append(f"Giá: {product['price']}")
+        document.append(f"Giá đang bán: {product['price']}")
+        document.append(f"Phần trăm giảm giá: {product['discount']}")
+        document.append(f"Giá gốc: {product['oprice']}")
         document.append(f"Hãng: {product['brand']}")
         document.append(f"Phân loại: {product['category']}")
         document.append(f"Mẫu: {product['variant']}")
@@ -81,8 +91,8 @@ def query_assistant(query, brand=None, origin=None, sort=None,
     return document
 
 
+if __name__ == '__main__':
+    query = 'sữa rửa mặt'
+    products = query_assistant(query, top_k=8)
 
-# query = 'Ngừa mụn sạch sâu xóa nhòa vết nám'
-# products = query_assistant(query, top_k=8)
-
-# print(products)
+    print(products)
