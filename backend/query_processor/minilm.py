@@ -32,9 +32,11 @@ def get_decision(query):
     - Cung cấp đầy đủ tên sản phẩm như: 'sửa rửa mặt cerave', 'sửa rửa mặt svr'.
 
     (3) Nếu người dùng nhắc đến việc tìm sản phẩm theo yêu cầu:
-        hãy trả về các thuộc tính có trong cú pháp sau (nếu có), trong đó signal và product_term là bắt buộc: {'signal':3,'product_term':'<thông tin sản phẩm>', 'product_ingredients': '<thành phần sản phẩm>','price':'<price>', 'operator_price':'<operator>', 'rating':'<rating>', 'operator_rating':'<operator>', 'others':'<thông tin khác>'}
-        Lưu ý <operator> sẽ là các operator trong mongodb như '$gte', '$lte' khi câu hỏi liên quan đến giá lớn hơn, bé hơn bao nhiêu đó. Hoặc rating cao hơn hay thấp hơn bao nhiêu đó.
-        Và <price> phải được chuyển về theo dạng ví dụ 10k là 10000.
+        Hãy trả về các thuộc tính có trong cú pháp sau (nếu có), trong đó signal và product_term là bắt buộc: {'signal':3, 'product_term':'<thông tin sản phẩm>', 'sale': <khuyến mãi>, 'product_ingredients': '<thành phần sản phẩm>','price':'<price>', 'operator_price':'<operator>', 'rating':'<rating>', 'operator_rating':'<operator>', 'others':'<thông tin khác>'}
+        Lưu ý:
+            <operator> sẽ là các operator trong mongodb như '$gte', '$lte' khi câu hỏi liên quan đến giá lớn hơn, bé hơn bao nhiêu đó. Hoặc rating cao hơn hay thấp hơn bao nhiêu đó.
+            <price> phải được chuyển về theo dạng ví dụ 10k là 10000.
+            <khuyến mãi> sẽ có giá trị bằng 1 nếu như người dùng đề cập đến khuyến mãi và bằng 0 nếu không đề cập gì đến khuyến mãi
         Nếu không có yêu cầu về thuộc tính nào thì đừng trả thuộc tính đó lại.
 
     (4) Nếu người dùng cần hỗ trợ hãy trả lời với cú pháp: {'signal':4,'query':<query>}.

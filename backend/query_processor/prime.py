@@ -14,6 +14,7 @@ from itertools import combinations
 import Levenshtein as lev
 from pyvi import ViTokenizer
 from .query_assistant import query_assistant
+from .query_assistant_sale import query_assistant_sale
 from .filter_similar import filter_similar_products
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
@@ -234,6 +235,9 @@ def switch(signal, message, pc, mongo):
     additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
     print(additional)
     document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo {sort}:\n'+additional+str(metadata)
+    if signal == 3 and str(message.get('sale')) == '1':
+        additional_sale = query_assistant_sale()
+        document += additional_sale
     return document
 
 def get_document(query, pc, mongo):
