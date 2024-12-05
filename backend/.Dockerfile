@@ -1,9 +1,7 @@
 FROM python:3.12.4-slim
 
-# Set the working directory
 WORKDIR /backend
 
-# Install build dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     build-essential \
@@ -11,12 +9,12 @@ RUN apt-get update && \
     libffi-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy the application code
+RUN pip install --upgrade pip setuptools wheel
+
 COPY . .
 
-# Upgrade pip and install dependencies
-RUN pip install --upgrade pip setuptools wheel
 RUN pip install -r requirements.txt
 
-# Expose the application port
 EXPOSE 8000
+
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
