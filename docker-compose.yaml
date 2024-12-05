@@ -22,9 +22,7 @@ services:
     networks:
       - sharedNetwork
     environment:
-      - LOCALHOST=http://backend:8000
-    env_file:
-      - .env
+      - SERVICE_URL=http://backend:8000
     command: streamlit run app.py
 
 networks:

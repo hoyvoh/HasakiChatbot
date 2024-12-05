@@ -4,6 +4,7 @@ from pymongo import MongoClient, UpdateOne
 import pandas as pd
 from tqdm import tqdm
 from itertools import combinations
+import string
 
 USER = os.getenv('USERNAME')
 PASS = os.getenv('PASSWORD')
@@ -140,7 +141,8 @@ class MongoDB():
         result = []
         try:
             pid_list = list(map(int, pid_list))
-            if 'operator_price' in message and 'price' in message:
+            print("PID list:", pid_list)
+            if 'operator_price' in message and 'price' in message and isinstance(int(message['price']), int) and message['price']:
                 
                 # Query the document using the pid
                 results = col.find(

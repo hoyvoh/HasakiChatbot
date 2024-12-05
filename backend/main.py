@@ -1,6 +1,5 @@
 from query_processor import generate_answer
 from fastapi import FastAPI
-from prompt import AwanAPI
 from prompt import OpenAIClient
 from pydantic import BaseModel
 from database import MongoDB, PineConeDB
@@ -21,7 +20,6 @@ PINECONE_API_KEY = getenv('PINECONE_API_KEY')
 class Query(BaseModel):
     query: str
 
-#awan = AwanAPI(model_name=MODEL_NAME)
 openai = OpenAIClient()
 pc = PineConeDB(api_key=PINECONE_API_KEY)
 mongo = MongoDB(username=USERNAME, password=PASSWORD, cluster_url=CLUSTER_URL)
@@ -29,6 +27,7 @@ app = FastAPI()
 
 origins = [
     "http://localhost:8501",
+    "http://0.0.0.0:8501"
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -47,6 +46,7 @@ async def process_answer(query_request: Query):
     start = time()
     answer = generate_answer(query_request.query, openai, pc, mongo)
     end = time()
-    print("Final Execution time:", end-start)
+    print("Time used while query:", end-start, "s")
+
     return {'answer': answer}
 

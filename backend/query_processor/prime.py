@@ -8,19 +8,19 @@ load_dotenv()
 
 from .minilm import get_decision
 # from . import minilm
-from prompt import PROMPT_TEMPLATE, AwanAPI, OpenAIClient
+from prompt import PROMPT_TEMPLATE, OpenAIClient
 from database import PineConeDB, MongoDB, get_pids_from_pc_response, get_similar_metrics
 from itertools import combinations
 import Levenshtein as lev
 from pyvi import ViTokenizer
 from time import time
 from .query_assistant import query_assistant
+from .query_assistant_sale import query_assistant_sale
 from .filter_similar import filter_similar_products
 
 LARGE_MODEL = os.getenv('MODEL_NAME_LARGE')
 PINECONE_API_KEY = os.getenv('PINECONE_API_KEY')
 
-awan = AwanAPI(model_name=LARGE_MODEL)
 openai = OpenAIClient()
 pc = PineConeDB()
 mongo = MongoDB()
@@ -50,8 +50,7 @@ def extract_products_to_natural_language(data):
     return "\n".join(natural_language_output)
 
 def extract_support_to_natural_language(data):
-    print(data)
-    '''natural_language_output = []
+    natural_language_output = []
     for info in data:
         support_des = (
             f"Vấn đề cần hỗ trợ: {info.get('title')}, "
@@ -60,14 +59,14 @@ def extract_support_to_natural_language(data):
         )
 
         natural_language_output.append(support_des)
-    return "\n".join(natural_language_output)'''
+    return "\n".join(natural_language_output)
 
-    support_language = (
+    '''support_language = (
             f"Vấn đề cần hỗ trợ: {data.get('title')}, "
             f"Thông tin để hỗ trợ khách hàng: {data.get('content')}, "
             f"Link dẫn đến web hỗ trợ: {data.get('link')} "
         )
-    return support_language
+    return support_language'''
 
 def suggest_based_on_budget(data, tolerance=0.1, top_n=3, similarity_threshold=0.9):
     budget = data["budget"]
@@ -141,15 +140,21 @@ def switch(signal, message, pc, mongo):
                 pids = get_pids_from_pc_response(response)
                 metadata = mongo.query_pids(pids)
 
-                docs += f"Thông tin về {value}:\n {"\n\nvà ".join(metadata)}"
+                docs += f"Thông tin về {value}:\n {"\n\nvà ".join(metadata)}\n\n"
+                brand = message.get('brand', '')
+                origin = message.get('origin', '')
+                sort = message.get('sort', '')
+                additional = query_assistant(query=product, brand=brand, origin=origin, sort=sort, top_k=3)
+                docs+=additional
+
         
         return docs
 
 
     elif signal == 4:
-        #query = ViTokenizer.tokenize(str(message['query']))
-        query = str(message['query'])
-        metadata = mongo.query_support(query)
+        query = ViTokenizer.tokenize(str(message['query']))
+        #query = str(message['query'])
+        metadata = pc.query_support_metadata(query)
         
         return extract_support_to_natural_language(metadata)
 
@@ -198,18 +203,30 @@ def switch(signal, message, pc, mongo):
     else: # signal == 3
         if "product_term" in message:
             product = str(message['product_term'])
-            tokenized_product = ViTokenizer.tokenize(product)
+            ingredient = str(message.get('product_ingredients', ""))
+            pids =[]
+            if product:
+                tokenized_product = ViTokenizer.tokenize(product)
+                res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
+                pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
+                res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
+                pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
+                pids.extend(pid_list_by_pname)
+                pids.extend(pid_list_by_desc)
+
+            if ingredient:
+                tokenized_ingredient = ViTokenizer.tokenize(ingredient)
+                res_by_ingr = pc.query_index_name_to_id(query=tokenized_ingredient, namespace='product-ingredient-namespace', topk=5)
+                pid_list_by_ingr = get_pids_from_pc_response(res_by_ingr)
+                pids.extend(pid_list_by_ingr)
+
+            print("top 10 pid: ", pids)
             
-            res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=8)
-            pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
-            
-            
-            res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=8)
-            pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
-            print("top 10 pid: ", pid_list_by_pname + pid_list_by_desc)
-        
-            metadata = mongo.query_pids_with_filter(pid_list_by_pname + pid_list_by_desc, message, 'product_data')
-            metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
+            # query ID in product collection => metadata
+            metadata = mongo.query_pids_with_filter( pids, message, 'product_data')
+            print(metadata)
+            if metadata.get('products'):
+                metadata = filter_similar_products(metadata.get('products'), threshold=0.5)[0]
             print("After:",metadata)
 
     metadata = extract_products_to_natural_language(metadata)
@@ -219,6 +236,9 @@ def switch(signal, message, pc, mongo):
     additional = query_assistant(query=message['product_term'], brand=brand, origin=origin, sort=sort, top_k=3)
     print(additional)
     document = f'Các sản phẩm tìm được liên quan đến {brand} và {origin}, được sắp xếp theo {sort}:\n'+additional+str(metadata)
+    if signal == 3 and str(message.get('sale')) == '1':
+        additional_sale = query_assistant_sale()
+        document += additional_sale
     return document
 
 def get_document(query, pc, mongo):

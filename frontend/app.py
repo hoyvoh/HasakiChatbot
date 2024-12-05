@@ -7,13 +7,13 @@ from dotenv import load_dotenv
 load_dotenv()
 import requests
 import json
-LOCALHOST = os.getenv('LOCALHOST')
 
+SERVICE_URL = os.getenv('SERVICE_URL')
 
 def get_response(query):
     payload = {"query":query}
     headers = {'Content-Type': 'application/json', 'accept': 'application/json'}
-    response = requests.post('http://127.0.0.1:8000/send-query/', json=payload, headers=headers)
+    response = requests.post(SERVICE_URL, json=payload, headers=headers)
     if response.status_code == 200:
         return response.json().get('answer')
     else:

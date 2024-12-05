@@ -30,8 +30,8 @@ def filter_similar_products(products, threshold=0.9):
                 used_indices.add(j)
 
         schemes.append({'products': current_scheme})  # Store scheme in specified format
-        if len(schemes) >= 3:  # Limit to 3 schemes
-            break
+        # if len(schemes) >= 3:  # Limit to 3 schemes
+        #     break
 
     return schemes
 
