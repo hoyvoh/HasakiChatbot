@@ -47,5 +47,6 @@ async def process_answer(query_request: Query):
     answer = generate_answer(query_request.query, openai, pc, mongo)
     end = time()
     print("Time used while query:", end-start, "s")
+
     return {'answer': answer}
 

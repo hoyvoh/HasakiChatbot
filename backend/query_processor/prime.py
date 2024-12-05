@@ -13,6 +13,7 @@ from database import PineConeDB, MongoDB, get_pids_from_pc_response, get_similar
 from itertools import combinations
 import Levenshtein as lev
 from pyvi import ViTokenizer
+from time import time
 from .query_assistant import query_assistant
 from .query_assistant_sale import query_assistant_sale
 from .filter_similar import filter_similar_products
@@ -253,8 +254,10 @@ def generate_answer(query, client, pc, mongo):
     print("Doc: ", document)
     guide = PROMPT_TEMPLATE.format(document)
     print("The guide:", guide)
-
+    start = time()
     chat_response = client.get_response(prompt = guide, user_message = query)
+    end = time()
+    print("Chat returns response after:", end-start)
     return chat_response
 
 
