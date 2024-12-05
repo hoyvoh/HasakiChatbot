@@ -11,7 +11,6 @@ services:
       - sharedNetwork
     env_file:
       - .env
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
@@ -22,8 +21,7 @@ services:
     networks:
       - sharedNetwork
     environment:
-      - SERVICE_URL=http://backend:8000
-    command: streamlit run app.py
+      - SERVICE_URL=http://backend:8000/send-query/
 
 networks:
   sharedNetwork:
