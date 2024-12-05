@@ -206,16 +206,16 @@ def switch(signal, message, pc, mongo):
             pids =[]
             if product:
                 tokenized_product = ViTokenizer.tokenize(product)
-                res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=8)
+                res_by_pname = pc.query_index_name_to_id(query=tokenized_product, namespace='product-pname-namespace', topk=5)
                 pid_list_by_pname = get_pids_from_pc_response(res_by_pname)
-                res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=8)
+                res_by_desc = pc.query_index_name_to_id(query=tokenized_product, namespace='product-desc-namespace', topk=5)
                 pid_list_by_desc = get_pids_from_pc_response(res_by_desc)
                 pids.extend(pid_list_by_pname)
                 pids.extend(pid_list_by_desc)
 
             if ingredient:
                 tokenized_ingredient = ViTokenizer.tokenize(ingredient)
-                res_by_ingr = pc.query_index_name_to_id(query=tokenized_ingredient, namespace='product-ingredient-namespace', topk=8)
+                res_by_ingr = pc.query_index_name_to_id(query=tokenized_ingredient, namespace='product-ingredient-namespace', topk=5)
                 pid_list_by_ingr = get_pids_from_pc_response(res_by_ingr)
                 pids.extend(pid_list_by_ingr)
 
