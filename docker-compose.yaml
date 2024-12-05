@@ -21,7 +21,7 @@ services:
     networks:
       - sharedNetwork
     environment:
-      - SERVICE_URL=http://backend:8000
+      - SERVICE_URL=http://backend:8000/send-query/
 
 networks:
   sharedNetwork:

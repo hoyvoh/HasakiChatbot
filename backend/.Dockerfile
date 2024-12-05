@@ -13,6 +13,8 @@ RUN pip install --upgrade pip setuptools wheel
 
 COPY . .
 
+RUN pip install torch --extra-index-url
+
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
