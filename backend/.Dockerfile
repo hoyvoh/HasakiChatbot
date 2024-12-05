@@ -13,7 +13,7 @@ RUN pip install --upgrade pip setuptools wheel
 
 COPY . .
 
-RUN pip install torch --extra-index-url
+RUN pip install torch --extra-index-url https://download.pytorch.org/whl/cpu
 
 RUN pip install -r requirements.txt
 
